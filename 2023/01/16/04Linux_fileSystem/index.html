@@ -1,0 +1,735 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Linux文件系统技术内幕 | chaceq.love</title><meta name="author" content="sqq"><meta name="copyright" content="sqq"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux文件系统技术内幕 学习 Linux 分析与应用的过程中可以自己尝试去实现一个文件系统，这个在我们的下一章节中进行代码操作。在这一章节我们一起来看看 Linux 文件系统中涉及到的各种结构体基础知识，为后面进一步手动操作做好铺垫。这部分内容在当初学操作系统时学校其实是讲的比较浅的，再加上各个结构体之间错杂交互，（其实俺操作系统得了98嘿嘿，但是文件系统这一块很多细节还是迷迷糊糊的，下面我们">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux文件系统技术内幕">
+<meta property="og:url" content="https://www.chaceq.love/2023/01/16/04Linux_fileSystem/index.html">
+<meta property="og:site_name" content="chaceq.love">
+<meta property="og:description" content="Linux文件系统技术内幕 学习 Linux 分析与应用的过程中可以自己尝试去实现一个文件系统，这个在我们的下一章节中进行代码操作。在这一章节我们一起来看看 Linux 文件系统中涉及到的各种结构体基础知识，为后面进一步手动操作做好铺垫。这部分内容在当初学操作系统时学校其实是讲的比较浅的，再加上各个结构体之间错杂交互，（其实俺操作系统得了98嘿嘿，但是文件系统这一块很多细节还是迷迷糊糊的，下面我们">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://www.chaceq.love/img/2.jpg">
+<meta property="article:published_time" content="2023-01-16T05:36:44.673Z">
+<meta property="article:modified_time" content="2023-01-18T07:37:23.016Z">
+<meta property="article:author" content="sqq">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.chaceq.love/img/2.jpg"><link rel="shortcut icon" href="/img/2.jpg"><link rel="canonical" href="https://www.chaceq.love/2023/01/16/04Linux_fileSystem/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux文件系统技术内幕',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-01-18 15:37:23'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><script src="https://cyan-blog.oss-cn-shenzhen.aliyuncs.com/cdn/js/three.min.js"></script> <link rel="stylesheet" href="/css/transpancy.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/2.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><hr/></div></div><div class="canvas-container" id="canvas"></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">chaceq.love</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Linux文件系统技术内幕</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-01-16T05:36:44.673Z" title="Created 2023-01-16 13:36:44">2023-01-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2023-01-18T07:37:23.016Z" title="Updated 2023-01-18 15:37:23">2023-01-18</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux文件系统技术内幕"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Linux文件系统技术内幕"><a href="#Linux文件系统技术内幕" class="headerlink" title="Linux文件系统技术内幕"></a>Linux文件系统技术内幕</h1><blockquote>
+<p>学习 Linux 分析与应用的过程中可以自己尝试去实现一个文件系统，这个在我们的下一章节中进行代码操作。在这一章节我们一起来看看 Linux 文件系统中涉及到的各种结构体基础知识，为后面进一步手动操作做好铺垫。这部分内容在当初学操作系统时学校其实是讲的比较浅的，再加上各个结构体之间错杂交互，（其实俺操作系统得了98嘿嘿，但是文件系统这一块很多细节还是迷迷糊糊的，下面我们就来一起再探讨一下吧！参考书籍：Linux 内核设计与实现；深入理解 Linux 内核。</p>
+</blockquote>
+<h1 id="虚拟文件系统"><a href="#虚拟文件系统" class="headerlink" title="虚拟文件系统"></a>虚拟文件系统</h1><p>​	一切皆文件是 Linux 的基本哲学之一，无论是普通文件还是目录，设备，套接字等都统一抽象成文件描述，并提供相同的 api 对其进行操作，正因此，Linux 中允许不同的文件系统共存，如 ext2，ext3，xfs等，而作为用户却无需关心底层文件类型，只需要使用统一的 api 便可进行各种文件操作，这就是 Linux 的虚拟文件系统（VFS，Virtual Filesystem Switch）。VFS 向上提供统一的文件操作接口（例如 open() 函数），而向下各个文件系统内部对其调用有各自的实现。什么是文件系统呢？其定义为操作系统中的各类文件，管理文件的软件，以及管理文件所涉及到的数据结构等信息的集合，他们都可挂载在 Linux 文件树下，即一个文件系统的顶层目录（&#x2F;）可挂载在另一个文件系统的子目录下，使之成为其树形结构的一个分支，而该子目录便称为挂载点。</p>
+<p><img src="https://s2.loli.net/2023/01/16/6gsIBJFflynKU2c.jpg" alt="WAS42F8324_4_B_HGGDRADR.jpg"></p>
+<p>​		Linux 下有几十种文件类型，如下。</p>
+<ul>
+<li>ext2 具有极快的速度和极小的CPU占用率，可用于硬盘和移动存储设备，兼容 FAT，安全性不高。</li>
+<li>ext3 增加日志功能，可回溯追踪，稳定性高。</li>
+<li>ext4 日志式文件系统，支持1EB，最大单文件16TB，支持连续写入可减少文件碎片。</li>
+<li>xfs 可以管理500T的硬盘。rhel7 默认文件系统。</li>
+</ul>
+<p>​		windows 的文件系统有比如 FAT16，FAT32，NTFS等等，还有其他文件系统比如 RAMFS：内存文件系统；ISO 9660：光盘；NFS：网络文件系统等。比如我们 Linux 的<code>/proc</code>目录就是一种 procfs虚拟文件系统，其挂载于 Linux 根目录下。接下来我们就来看看构成文件系统的数据结构，也就是文件系统在磁盘中的表现形式。</p>
+<h1 id="文件在磁盘中的组织形式"><a href="#文件在磁盘中的组织形式" class="headerlink" title="文件在磁盘中的组织形式"></a>文件在磁盘中的组织形式</h1><p>​		磁盘是由若干扇区组成，每个扇区有512B (将磁盘存储区扇区化是为了更好的管理磁盘)。若干个扇区可组成一个块 (ext2 默认是由8个扇区组成一个块，即 4kb ，这里为了简化说明，就把2个扇区组成一个块，即 1kb)。而若干个块便组成了磁盘的一个分区。</p>
+<p>​		文件系统的物理表现形式主要由四个部分组成。<strong>超级块，索引节点，目录块，数据块</strong>。除此之外还有每个分区开头的<strong>自举块</strong>（主要存储分区本身的操作系统类型、分区起始地址，与文件系统无关，每个分区只有一个），位于 i节点表 和 超级块 之间的（下图没画出来）的**块组描述表 GDT <strong>（存储一个块组的描述配置信息），</strong>块位图(block bitmap)<strong>（每个比特位表示一个数据块是否被标记使用；1：已使用，0：未使用；）以及</strong>inode 位图(inode bitmap)**（每一个比特位表示一个inode节点。1：已使用，0：未使用；）。</p>
+<p><img src="https://s2.loli.net/2023/01/16/1Wr3GIyiVBNQ2H9.png" alt="image.png"></p>
+<h2 id="超级块-super-block"><a href="#超级块-super-block" class="headerlink" title="超级块(super block)"></a>超级块(super block)</h2><p>​		⽤于存储⽂件系统的全局控制信息的数据结构，是文件系统的心脏，一个超级块对应一个独立的文件系统。描述⽂件系统的状态、⽂件系统类型、大小 、区块数、索引节点数等，存放于磁盘的特定扇区中。当操作系统启动后，系统内核会把超级块中的内容复制到内存中，并周期性的利用内存里的最新内容去更新硬盘上的超级块中的内容（超级块对象维护着整个文件系统的元数据，因此在开机后是常驻内存并被缓存的）。而对于某些非基于磁盘的文件系统（例如基于内存的文件系统，sysfs），它们会在使用现场创建超级块并保存于内存之中。</p>
+<p>​		由于这个更新存在时间差，为此内存中的超级块信息与硬盘中的超级块信息往往只有在开机与关机的某个特定时刻是同步的，而在其他时间都是不同步的。假设当操作系统意外宕机或者断电时，内存中的超级块信息没有及时保存到硬盘中，此时文件系统的完整性就会受到破坏。到这种情况时，系统工程师往往需要利用系统提供的 sync 命令在系统出现故障的那一刻把内存里的内容复制到磁盘上。这个过程往往操作系统会自动完成，这也正是因为为什么Unix操作系统要比Windows操作系统稳定的一个重要原因。当操作系统重新启动的过程中，系统内核会对两者进行比较，根据他们之间的差异，给文件系统打上干净或者脏的标签，该信息也是存储在文件系统的超级块中。</p>
+<p>​		通过<code>df -i</code>命令可以查看目前在 Linux 系统上的文件系统磁盘使用情况（inode，后面有介绍）统计。接着使用<code>sudo dumpe2fs /xxxx</code>可以查看该文件系统的超级块和块组信息。</p>
+<p>​		超级块对象由 super_block 结构体表示，定义于 <code>linux/fs.h</code>中，如下。</p>
+<pre><code class="c">struct super_block &#123;
+    struct list_head	s_list;
+    dev_t			s_dev;		/*设备标识符 */
+    unsigned long		s_blocksize;/*以字节为单位的块大小*/
+    unsigned char		s_blocksize_bits;/*块大小占用位数，如512字节的位数为9*/
+    unsigned char		s_dirt;
+    unsigned long long	s_maxbytes;	/* Max file size */
+    struct file_system_type	*s_type;
+    const struct super_operations	*s_op;
+    const struct dquot_operations	*dq_op;/*文件系统的配额操作函数集合*/
+    const struct quotactl_ops	*s_qcop;/*文件系统的配额控制操作函数集合*/
+    const struct export_operations *s_export_op;/*网络文件系统的导出操作函数集合*/
+    unsigned long		s_flags;/*挂载标志*/
+    unsigned long		s_magic;/*魔术数标记*/
+    struct dentry		*s_root;
+    struct rw_semaphore	s_umount;/*文件系统卸载时候用到的读写信号量*/
+    struct mutex		s_lock;/*专用的互斥量*/
+    int			s_count; /*引用计数*/
+    int			s_syncing;/*文件系统的同步标记位*/
+    int			s_need_sync_fs;/*需要同步的标记位*/
+    atomic_t		s_active;/*原子文件系统引用计数*/
+#ifdef CONFIG_SECURITY
+    void                    *s_security;
+#endif
+    struct xattr_handler	**s_xattr;
+ 
+    struct list_head	s_inodes;	/* all inodes */
+    struct list_head	s_dirty;	/* dirty inodes */
+    struct list_head	s_io;		/* parked for writeback */
+    struct hlist_head	s_anon;		/* anonymous dentries for (nfs) exporting */
+    struct list_head	s_files;
+ 
+ 
+    struct block_device	*s_bdev;
+    struct mtd_info		*s_mtd;
+    struct list_head	s_instances;
+    struct quota_info	s_dquot;	/* Diskquota specific options */
+ 
+    int			s_frozen;
+    wait_queue_head_t	s_wait_unfrozen;
+    char s_id[32];				/* Informational name */
+    void 			*s_fs_info;	/* Filesystem private info */
+
+    /*
+     * The next field is for VFS *only*. No filesystems have any business
+     * even looking at it. You had been warned.
+     */
+    struct mutex s_vfs_rename_mutex;	/* Kludge */
+ 
+    /* Granularity of c/m/atime in ns.
+       Cannot be worse than a second */
+    u32		   s_time_gran;
+ 
+    /*
+     * Filesystem subtype.  If non-empty the filesystem type field
+     * in /proc/mounts will be &quot;type.subtype&quot;
+     */
+    char *s_subtype;
+&#125;;
+</code></pre>
+<p>​		以上代码在注释中有对每一项的解释，下面列出几个比较重要的成员单独提一下：</p>
+<ul>
+<li><code>struct list_head	s_list;</code>：双向循环链表，前后指针连接所有超级块的链表，其结构体实现为 <code>struct list_head *next, *prev;</code>。</li>
+<li><code>unsigned char		s_dirt;</code>：修改（脏页）标记。</li>
+<li><code>struct file_system_type   *s_type;</code>：文件系统类型结构体（比如是 EXT2 还是 FAT32），里边是对文件系统的细节描述，后面有介绍。</li>
+<li><code>const struct super_operations *s_op;</code>：超级块方法结构体，定义了超级块操作函数指针的集合，例如有 <code>(* destroy_inode) </code>，<code>(* write_inode)</code> ，<code>(* free_inode)</code> 等等。</li>
+<li><code>struct dentry  *s_root;</code>：超级块内的指向根目录的 dentry 结构体指针。（dentry 结构体简单来说就是形成 Linux 文件树形结构的节点，我们在后面再进一步详解。）</li>
+<li><code>struct list_head	s_inodes;</code>：指向 inode 节点链表，该结构体马上会介绍到。</li>
+<li><code>struct list_head	s_dirty;</code>：指向脏的 inode 节点链表，因此当要回写所有脏 inode 到磁盘时便无需遍历所有的 inode 节点。</li>
+</ul>
+<p>​		超级块通过 alloc_super() 函数创建并初始化，在文件系统安装时，文件系统会调用该函数以便于从磁盘中读取文件系统超级块，并且将信息填充到内存中的超级块对象中。</p>
+<h2 id="索引节点（index-node，inode）"><a href="#索引节点（index-node，inode）" class="headerlink" title="索引节点（index node，inode）"></a>索引节点（index node，inode）</h2><p>​		Unix&#x2F;Linux 操作系统将一个文件实际上分成两部分，一部分是文件数据本身，另一部分是文件的控制信息，例如文件大小，设备标识符文件模式，扩展属性等等，这些信息又被称为文件的元数据，它们由 <code>struct inode</code>所表示，在 Linux 中可用<code>stat file</code>查看其 inode 信息。比如我们使用<code>ls -l</code>命令查看的就是文件的一些元数据而非文件本身。同时注意：inode 有两种，一种是 VFS 的 inode，一种是具体文件系统的 inode 。前者在内存中，后者在磁盘中。所以每次其实是将磁盘中的 inode 调进填充内存中的 inode，这样才是算使用了磁盘文件 inode，而对 VFS 索引节点的任何修改都将写回磁盘更新磁盘的索引节点 。此外，由于文件系统种类繁多，某些文件系统可能并不能完整地包含索引节点结构体所要求的所有信息，例如，有的文件系统可能并不记录文件的访问时间，这时该文件系统可以在实现中选择合适的办法来解决这个问题。</p>
+<p>​		每个文件都有全系统唯一的 inode 编号，用于 Linux 内部区分不同文件，在通过文件名读文件时，首先系统找到该文件名对应的 inode 号；其次通过 inode 号获取 inode 信息；最后根据 inode 信息找到文件数据所在的 block并读出数据。</p>
+<blockquote>
+<p>正因此也使得软件更新变得简单，可以在不关闭软件的情况下进行更新，不需要重启。因为系统通过 inode 号识别运行中的文件而非文件名。更新时新版文件以同样的文件名生成一个新的 inode ，不会影响到正在运行中的文件。等到下一次运行该软件的时，文件名就自动指向新版文件了，而旧版文件的 inode 则已被回收。</p>
+</blockquote>
+<p>​		inode 结构体数据结构相对稳定，没有变长数据，可以固定其大小，进而可以实现将整个文件系统中的 inode 按照一定的组织方式（数组）来集中存储在硬盘某位置，文件系统加载时很方便查找，一般每个inode节点的大小是128字节或256字节。最后提一点，inode 包含一个文件的所有描述信息，除了文件名，至于为什么我们后面再提。下面来看一看 inode 的源码，定义于<code>linux/fs.h</code>里。</p>
+<blockquote>
+<p>由于每个文件都必须有一个inode，因此有可能发生inode已经用光，但是硬盘还未存满的情况。这时，就无法在硬盘上创建新文件。</p>
+</blockquote>
+<pre><code class="c">struct inode &#123;
+    umode_t         i_mode;//文件的访问权限（eg:rwxrwxrwx）
+    unsigned short      i_opflags;
+    kuid_t          i_uid;//inode拥有者id
+    kgid_t          i_gid;//inode拥有者组id
+    unsigned int        i_flags;//inode标志，可以是S_SYNC,S_NOATIME,S_DIRSYNC等
+
+#ifdef CONFIG_FS_POSIX_ACL
+    struct posix_acl    *i_acl;
+    struct posix_acl    *i_default_acl;
+#endif
+
+    const struct inode_operations   *i_op;//inode操作
+    struct super_block  *i_sb;//所属的超级块
+    /*
+        address_space并不代表某个地址空间，而是用于描述页高速缓存中的页面的一个文件对应一个address_space，一个address_space与一个偏移量能够确定一个一个也高速缓存中的页面。i_mapping通常指向i_data,不过两者是有区别的，i_mapping表示应该向谁请求页面，i_data表示被改inode读写的页面。
+    */
+    struct address_space    *i_mapping;
+
+#ifdef CONFIG_SECURITY
+    void            *i_security;
+#endif
+
+    /* Stat data, not accessed from path walking */
+    unsigned long       i_ino;//inode号
+    /*
+     * Filesystems may only read i_nlink directly.  They shall use the
+     * following functions for modification:
+     *
+     *    (set|clear|inc|drop)_nlink
+     *    inode_(inc|dec)_link_count
+     */
+    union &#123;
+        const unsigned int i_nlink;//硬链接个数
+        unsigned int __i_nlink;
+    &#125;;
+    dev_t           i_rdev;//如果inode代表设备，i_rdev表示该设备的设备号
+    loff_t          i_size;//文件大小
+    struct timespec     i_atime;//最近一次访问文件的时间
+    struct timespec     i_mtime;//最近一次修改文件的时间
+    struct timespec     i_ctime;//最近一次修改inode的时间
+    spinlock_t      i_lock; /* i_blocks, i_bytes, maybe i_size */
+    unsigned short          i_bytes;//文件中位于最后一个块的字节数
+    unsigned int        i_blkbits;//以bit为单位的块的大小
+    blkcnt_t        i_blocks;//文件使用块的数目
+
+#ifdef __NEED_I_SIZE_ORDERED
+    seqcount_t      i_size_seqcount;//对i_size进行串行计数
+#endif
+
+    /* Misc */
+    unsigned long       i_state;//inode状态，可以是I_NEW,I_LOCK,I_FREEING等
+    struct mutex        i_mutex;//保护inode的互斥锁
+
+    //inode第一次为脏的时间 以jiffies为单位
+    unsigned long       dirtied_when;   /* jiffies of first dirtying */
+
+    struct hlist_node   i_hash;//散列表
+    struct list_head    i_wb_list;  /* backing dev IO list */
+    struct list_head    i_lru;      /* inode LRU list */
+    struct list_head    i_sb_list;//超级块链表
+    union &#123;
+        struct hlist_head   i_dentry;//所有引用该inode的目录项形成的链表
+        struct rcu_head     i_rcu;
+    &#125;;
+    u64         i_version;//版本号 inode每次修改后递增
+    atomic_t        i_count;//引用计数
+    atomic_t        i_dio_count;
+    atomic_t        i_writecount;//记录有多少个进程以可写的方式打开此文件
+    const struct file_operations    *i_fop; /* former -&gt;i_op-&gt;default_file_ops */
+    struct file_lock    *i_flock;//文件锁链表
+    struct address_space    i_data;
+#ifdef CONFIG_QUOTA
+    struct dquot        *i_dquot[MAXQUOTAS];//inode磁盘限额
+#endif
+    /*
+        公用同一个驱动的设备形成链表，比如字符设备，在open时，会根据i_rdev字段查找相应的驱动程序，并使i_cdev字段指向找到的cdev，然后inode添加到struct cdev中的list字段形成的链表中
+    */
+    struct list_head    i_devices;，
+    union &#123;
+        struct pipe_inode_info  *i_pipe;//如果文件是一个管道则使用i_pipe
+        struct block_device *i_bdev;//如果文件是一个块设备则使用i_bdev
+        struct cdev     *i_cdev;//如果文件是一个字符设备这使用i_cdev
+    &#125;;
+
+    __u32           i_generation;
+
+#ifdef CONFIG_FSNOTIFY
+   //目录通知事件掩码
+    __u32           i_fsnotify_mask; /* all events this inode cares about */
+    struct hlist_head   i_fsnotify_marks;
+#endif
+
+#ifdef CONFIG_IMA
+    atomic_t        i_readcount; /* struct files open RO */
+#endif
+    //存储文件系统或者设备的私有信息
+    void            *i_private; /* fs or device private pointer */
+    //存储各个特定的文件系统属性
+       union &#123;
+        struct minix_inode_info minix_i;
+        struct ext2_inode_info ext2_i;
+        struct ext3_inode_info ext3_i;
+        struct hpfs_inode_info hpfs_i;
+        struct ntfs_inode_info ntfs_i;
+        struct msdos_inode_info msdos_i;
+        struct umsdos_inode_info umsdos_i;
+        struct iso_inode_info isofs_i;
+        struct sysv_inode_info sysv_i;
+        struct affs_inode_info affs_i;
+        struct ufs_inode_info ufs_i;
+        struct efs_inode_info efs_i;
+        struct romfs_inode_info romfs_i;
+        struct shmem_inode_info shmem_i;
+        struct coda_inode_info coda_i;
+        struct smb_inode_info smbfs_i;
+        struct hfs_inode_info hfs_i;
+        struct adfs_inode_info adfs_i;
+        struct qnx4_inode_info qnx4_i;
+        struct reiserfs_inode_info reiserfs_i;
+        struct bfs_inode_info bfs_i;
+        struct udf_inode_info udf_i;
+        struct ncp_inode_info ncpfs_i;
+        struct proc_inode_info proc_i;
+        struct socketsocket_i;
+        struct usbdev_inode_info usbdev_i;
+        struct jffs2_inode_infojffs2_i;
+        void *generic_ip;
+    &#125; u;
+&#125;;
+</code></pre>
+<p>​		以上代码在注释中有对每一项的解释，下面列出几个比较重要的成员单独提一下：</p>
+<ul>
+<li><code>struct hlist_node   i_hash;</code>：哈希表，内部为 <code>struct hlist_node *next, **pprev;</code>。系统通过 VFS inode 链表来对其进行组织，为了提高访问效率相应地构造了 inode 构造缓存和 此hash table。</li>
+<li><code>struct list_head    i_list, i_sb_list, i_dentry;</code>：分别是索引节点链表，超级块链表和目录项链表。</li>
+<li><code> unsigned long       i_ino;</code>：用于唯一的标识的索引节点号。</li>
+<li><code>atomic_t        i_count;</code>：引用计数。</li>
+<li><code> unsignd int		i_nlink</code>：硬链接数。（关于软硬链接的区别不了解的话可以搜搜）</li>
+<li><code>umode_t         i_mode;</code>：文件访问权限（eg：rwxrwxrwx），掩码格式表示。</li>
+<li><code>kuid_t          i_uid;</code>：inode 拥有者 id。</li>
+<li><code>loff_t          i_size;</code>：文件大小。</li>
+<li><code>dev_t           i_rdev;</code>：如果 inode 代表设备，i_rdev 表示该设备的设备号。</li>
+<li><code>struct address_space    *i_mapping;</code>：该指针指向和物理页 page 相关的结构体。</li>
+<li><code>struct timespec     i_atime, i_mtime, i_ctime;</code>：最后一次访问，修改文件，修改 inode 时间。</li>
+<li><code>struct super_block  *i_sb;</code>：所属的超级块指针。</li>
+<li><code>const struct inode_operations   *i_op;</code>：inode 函数操作结构体。描述了可以对 inode 进行的一系列操作，例如 ：<code>(*create)</code>，<code>(*mkdir)</code>，<code>(*symlink)</code>等等。</li>
+</ul>
+<p>​		当文件被进程打开时，磁盘里的 inode 结构体也就会被相应地加载进内存里，从内存的角度来看，inode 只可能处于3种状态之一</p>
+<ol>
+<li>inode存于内存中，没有被任何进程引用，不处于活动使用状态，也没有被修改过。</li>
+<li>inode存于内存中，正被一个或多个进程引用，即它的 i_count 和 i_nlink 都大于0，且文件内容和 inode 元数据内容都没被修改过。</li>
+<li>inode处于内存中，内容或元数据被修改过，即 inode 是脏的。</li>
+</ol>
+<p>​	内核提供了3个全局的链表来管理这3种状态的 inode，inode_unused 对应于第一种情况，inode_in_use 对应于第二种情况，超级块的 s_dirty 链表对应第三种情况。任何时刻内存中的 inode 只能在这3个链表之一，使用了 i_list 指针指向它所在的链表。维护这3个链表的好处是，当脏数据写回到磁盘时，只需要遍历超级块 super_block -&gt; s_dirty 上所有的 inode 就行。</p>
+<p>​		以上我们可以看作是内存中的 VFS inode 结构体，而对于硬盘中不同的具体文件系统其还有自己的实现域，比如 EXT2 文件系统在指向文件数据的具体实现为 12个直接块指针，一个一级间接块指针，一个二级间接块指针和一个三级块指针。通过 inode 节点指向各个目录块和数据块，便形成了文件系统在磁盘中的组织形式。例如，下图是 EXT2 的改进版本 EXT4 的组织方式 。</p>
+<p><img src="https://s2.loli.net/2023/01/16/wHjQp7i4OGEsn1V.png" alt="Linux目录树.png"></p>
+<p>​		接下来我们来看两个简单的例子粗浅地描述了其执行流程：</p>
+<blockquote>
+<p><code>mkdir /home/bingbing/zhuzhu.c 执行过程</code>：（1）通过块位图区找到空闲的数据块，存放 zhuzhu.c 中的内容 （2）通过 inode 位图区找到空闲的 inode 节点块，生成相应的 inode 节点 （3）在 bingbing 目录文件的数据块中添加一条 zhuzhu.c 的记录项。</p>
+<p><code>vim /home/bingbing/cat.c执行过程</code>：（1）找到 inode 编号为 2 的 inode 节点（Linux 根目录索引节点号）。（2）遍历根目录文件的数据块中的记录项，匹配 home记录项，获取其 inode 编号。 （3）遍历 home 目录文件的数据块中的记录项，匹配 bingbing 记录项，获取其 inode 编号。 （4）遍历 bingbing 目录文件的数据块中的记录项，匹配 cat.c 记录项，获取其 inode 编号，找到对应的的数据块，最后用 vim 打开文件。</p>
+</blockquote>
+<blockquote>
+<p>在这里抛出两个问题尚未解决，第一：dentry 只存在于内存里，那 inode 节点在树里的位置，还有比如它的父结点，子结点这些是在哪里存的呢？第二：inode结构体哪个成员表示其指向的数据块或者目录块？</p>
+</blockquote>
+<h1 id="文件在内存中的组织形式"><a href="#文件在内存中的组织形式" class="headerlink" title="文件在内存中的组织形式"></a>文件在内存中的组织形式</h1><p>​		文件在磁盘中以超级块 -&gt; inode -&gt; 数据块&#x2F;目录块的形式进行组织，而进程在操作文件时会将其加载到内存中，下面我们来看一看文件在内存中的组织形式。</p>
+<h2 id="目录项-dentry"><a href="#目录项-dentry" class="headerlink" title="目录项(dentry)"></a>目录项(dentry)</h2><p>​		前面我们提到了 inode 节点并不存储文件的名字，实际上 dentry 结构体便用来记录文件的名字、对应文件的 inode 指针，与其他 dentry 的关联关系。而多个相互关联的 dentry 目录项形成的树，就构成文件系统的目录结构，这便是文件系统的逻辑组织结构。因此我们可以总结出来，在 Linux 内存里的文件可以看成两部分，一部分是 dentry 结构体组成的目录树，每个 dentry 节点指向对应文件的 inode ，用于描述文件信息，而 inode 节点又指向文件的具体内容。</p>
+<blockquote>
+<p>例如：open一个文件 <code>/home/code1/test.c</code>，那么 &#x2F;、home、code1、test.c 都是一个 dentry节点（目录项），VFS 在查找的时候，根据一层一层的目录项找到对应的每个目录项的 inode ，那么沿着目录项进行操作就可以找到最终的文件。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2023/01/16/noakKG86AJFOqle.png" alt="image.png"></p>
+<p>​		与 inode 不同，dentry 是由内核维护的一个内存数据结构，所以通常也被叫做 dentry cache（目录项缓存），因此 dentry 只存在于内存中，并非像 inode 一样存储在磁盘中，VFS 根据字符串形式的路径名现场创建它。dentry 与 inode 是多对一的关系，即一个文件能够具有多个名称 —— 硬连接是最好的例子。下面我们来看一下 dentry 结构体的代码，其定义于<code>&lt;linux/dcache.h</code>中。</p>
+<pre><code class="c">struct dentry &#123;
+    atomic_t d_count;
+    unsigned int d_flags;		/* protected by d_lock */
+    spinlock_t d_lock;		/*自旋锁 per dentry lock */
+    struct inode *d_inode;		/* Where the name belongs to - NULL is
+                     * negative */
+    /*
+     * The next three fields are touched by __d_lookup.  Place them here
+     * so they all fit in a cache line.
+     */
+    struct hlist_node d_hash;	/* lookup hash list */
+    struct dentry *d_parent;	/* parent directory */
+    struct qstr d_name;
+ 
+    struct list_head d_lru;		/* LRU list */
+    /*
+     * d_child and d_rcu can share memory
+     */
+    union &#123;
+        struct list_head d_child;	/* child of parent list */
+     	struct rcu_head d_rcu;
+    &#125; d_u;
+    struct list_head d_subdirs;	/* our children */
+    struct list_head d_alias;	/* inode alias list */
+    unsigned long d_time;		/* 重置时间 used by d_revalidate */
+    struct dentry_operations *d_op;
+    struct super_block *d_sb;	/* The root of the dentry tree */
+    void *d_fsdata;			/* fs-specific data */
+#ifdef CONFIG_PROFILING
+    struct dcookie_struct *d_cookie; /* cookie, if any */
+#endif
+    int d_mounted;
+    unsigned char d_iname[DNAME_INLINE_LEN_MIN];	/* small names */
+&#125;;
+</code></pre>
+<p>​		来看几个比较重要的表项：</p>
+<ul>
+<li><p><code>atomic_t d_count;</code>：引用计数。</p>
+<ul>
+<li><p>对于普通文件，互为硬链接的 n 个文件的 d_count 均为 n，当删除某个文件时，所有硬链接文件的 d_count 均减 1，若 d_count 减为 0 则可以释放该 dentry 结构体和对应的 inode ，否则只可释放 dentry。</p>
+</li>
+<li><p>对于目录文件，不可通过 ln 命令来创建硬链接，但其本身却有硬链接，用 d_count 表示，通过<code>ls -l</code>命令可查看。假设有这样的目录树</p>
+<pre><code class="\">/
+|-- file
+|	 |-- test
+|	 |	   |-- a.txt
+|	 |	   |-- b.txt
+|	 |	   |-- f1
+|	 |	   |-- f2
+</code></pre>
+<p>对于 test 目录而言有 4 个硬链接数，1. 通过<code>cd /file/test</code>可进入该目录；2. 通过同级的<code>cd .</code>可进入该目录；3. 通过下级的 f1 文件<code>cd ..</code>可返回该目录；4. 通过下级的 f2 文件<code>cd ..</code>可返回该目录；因此我们也可总结出：一个目录文件的硬链接数至少为2。</p>
+</li>
+</ul>
+</li>
+<li><p><code>struct inode *d_inode;</code>：指向其对应的索引节点 inode。</p>
+</li>
+<li><p><code>unsigned int d_flags; </code>：状态位。有三种状态：</p>
+<ul>
+<li>被使用：意味着它正在被 VFS 使用并指向一个有效的索引节点 inode。（d_inode 有效，d_count &gt;&#x3D; 1）</li>
+<li>未被使用：指向一个有效的索引节点 inode，但 VFS 未使用（d_count &#x3D;&#x3D; 0）。若以后需要则可不必再创建 dentry，但若需回收内存则可撤销该 dentry。</li>
+<li>负状态：无对应索引节点 inode（d_inode &#x3D;&#x3D; NULL），由于索引节点被删除或目录不在正确时导致。</li>
+</ul>
+</li>
+<li><p><code>struct hlist_node d_hash; </code>：哈希链表节点，dentry 被放在哈希链表 dentry_cache 上，方便寻找。</p>
+</li>
+<li><p><code>struct dentry *d_parent; </code>：父目录指针。</p>
+</li>
+<li><p><code>struct qstr d_name;</code>：文件或者是目录的名字。</p>
+</li>
+<li><p><code>struct list_head d_lru; </code>：lru链表。</p>
+</li>
+<li><p><code>union&#123; struct list_head d_child;&#125;</code>：父目录中指向子目录的指针（即兄弟项指针）。</p>
+</li>
+<li><p><code>struct list_head d_subdirs;</code>：子目录链表。</p>
+</li>
+<li><p><code>struct list_head d_alias; </code>：索引节点别名链表。</p>
+</li>
+<li><p><code>struct dentry_operations *d_op;</code>：目录项操作函数指针。包含<code>(*d_hash)</code>，<code>(*d_delete)</code>，<code>(*d_release)</code>等操作。</p>
+</li>
+<li><p><code>struct super_block *d_sb;</code>：所属超级块。</p>
+</li>
+</ul>
+<p>​		既然这里我们这里谈的是文件在内存中的组织形式，当然也就少不了谈起和进程的关系，毕竟操作文件的主体肯定是进程而不是空气。与此相关联的我们要看三个结构体：<code>struct file</code>，<code>struct files_struct</code>以及<code>struct fs_struct</code>。</p>
+<p>​		我们从前往后看，首先我们知道 Linux 下描述进程的结构体是 task_struct （如果对这个还不了解的话先去搜一搜进程控制块和 task_struct 的概念），在 task_struct 里有一项 <code>struct files_struct *files;</code>，其指向描述本进程的打开文件表，注意，这描述的是进程打开的所有文件的总表，其中有一项为 <code>struct file ** fd;</code>，它是一个指针数组，数组的每一项指向一个打开的文件对象结构体，也就是我们要谈到的<code>struct file</code>，它针对的是单个文件。而对一个文件来说，我们便不难猜到了，<code>struct file</code>里有一项为<code>struct dentry *f_dentry;</code>，这就是指向该文件的 dentry 结构体的成员，这样，我们的知识便串联了起来。</p>
+<p>​		此外，上面的 file 和 files_struct 记录的都是进程打开的文件信息，但是对于进程来说，自身的一些信息用什么表示呢，这里就涉及到 fs_struct 结构体。比如我们在 <code>/home/bingbing/code1</code>下执行<code>./a.out</code>，那么作为进程的执行文件<code>a.out</code>本身也需要描述，这就是 task_struct 里的<code>struct fs_struct *fs</code>，其指向一个 fs_struct 结构体，fs_struct 里的比如<code>struct dentry * pwd;</code>描述的便是进程当前的执行目录的 dentry。这样，我们就把这几个结构体讲完了。来看看，千言万语汇成一幅图：</p>
+<p><img src="https://s2.loli.net/2023/01/17/sAoiTm9Ctv2Pk4r.jpg" alt="P_WCNS_1@_A~G4C@BPAX_KS.jpg"></p>
+<h2 id="用户打开文件表（files-struct）"><a href="#用户打开文件表（files-struct）" class="headerlink" title="用户打开文件表（files_struct）"></a>用户打开文件表（files_struct）</h2><p>​		当我们创建文件时，操作系统会为指向该文件的指针 FILE* 关联一个文件描述符 fd 并添加在文件描述符表中。在文件描述符表中 fd 相当于数组的索引。</p>
+<pre><code class="c">struct files_struct
+&#123;
+    atomic_t count;
+    rwlock_t file_lock; /*保护以下的所有域,以免在 tsk-&gt;alloc_lock 中的嵌套*/	
+    int next_fd;	/*已分配的最大文件描述符+1*/
+    
+    struct fdtable *fdt;
+    struct fdtable  fdtab;
+
+    struct embedded_fd_set close_on_exec_init; /*执行exec( )时需要关闭的文件描述符的初值集合*/
+    struct embedded_fd_set open_fds_init;/*文件描述符的初值集合*/
+    struct file *fd_array[NR_OPEN_DEFAULT];/*文件对象指针数组*/
+&#125;;
+</code></pre>
+<p>​		下面有一些比较重要的成员。</p>
+<ul>
+<li><code>atomic_t count;</code>是引用计数，表示共享该表的进程数。</li>
+<li><code>int next_fd;</code>：已分配的最大文件描述符+1，即下一个可用的 fd。</li>
+<li><code>struct fdtable *fdt</code>： 指向其他 fd 表的指针。</li>
+<li><code>struct fdtable fdtab</code>： 基 fd 表。</li>
+<li><code>struct file *fd_array[NR_OPEN_DEFAULT];</code>：缺省的文件对象数组。</li>
+</ul>
+<p>​		<code>fd_array[NR_OPEN_DEFAULT]</code> 数组中存储了 <code>struct file *</code>类型的数据，也就是指向已打开的文件对象，其中的宏<code>NR_OPEN_DEFAULT</code>定义等于计算机位数，在64位机器上为64，换句话说，一个进程的 <code>files_struct</code> 结构体最多能打开64个文件对象，大家肯定就会问，那超过64个怎么办呢？没错，这时候就需要用到 <code>fdtable</code> 了。</p>
+<pre><code class="c">struct fdtable &#123;
+    unsigned int max_fds;	/*当前文件对象的最大数*/
+    struct file __rcu **fd;      /* current fd array */
+    unsigned long *close_on_exec;/*指向 执行exec( )时需要关闭的文件描述符*/
+    unsigned long *open_fds;	/*指向 打开的文件描述符*/
+    unsigned long *full_fds_bits;
+    struct rcu_head rcu;
+&#125;;
+</code></pre>
+<p>​		从<code>struct fdtable</code>的源代码里可以看到该结构体内最值得关注的是<code>struct file __rcu **fd;</code>，这是一个二级指针，也就是说它是一个指针，它指向的对象的数据类型为<code>struct file *</code>，也就是对应的文件对象指针，实际上就是指向我们前面提到的<code>struct file *fd_array[NR_OPEN_DEFAULT];</code>这个成员（而我们通常提到的文件描述符 fd 其实就是该数组的下标索引，因此每个进程的文件描述符相互独立存在）。看一下下面这个图（红色和蓝色箭头表示指针，而灰色虚线表示展开某成员的细节）。</p>
+<blockquote>
+<p>小补充：<code>struct file __rcu **fd;</code>里的 _rcu 是什么? 参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/113999842">rcu 机制简介 - 知乎</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2023/01/17/rdngluIqtKZ3HT7.png" alt="image.png"></p>
+<p>​		对于以上的描述，我们可以来看一看对于内核第一个进程(即进程 init )的 <code>files_struct</code> 静态初始化代码，注意第 2 行和第 6 行：</p>
+<pre><code class="c">struct files_struct init_files = &#123;
+    .count      = ATOMIC_INIT(1),
+    .fdt        = &amp;init_files.fdtab,
+    .fdtab      = &#123;
+        .max_fds        = NR_OPEN_DEFAULT,
+        .fd               = &amp;init_files.fd_array[0],
+        .close_on_exec  = (fd_set *)&amp;init_files.close_on_exec_init,
+        .open_fds       = (fd_set *)&amp;init_files.open_fds_init,
+        .rcu            = RCU_HEAD_INIT,
+    &#125;,
+    .file_lock  = __SPIN_LOCK_UNLOCKED(init_task.file_lock),
+&#125;;
+</code></pre>
+<p>​		这样一看大家问题就来了，感觉 <code>struct fdtable fdtab</code>没有存在的意义呀，即使去除该结构，也足以表达<code>files_struct</code>。注意，咱们前面说了，64位机<code>file_array</code>至多能存64个文件对象，当进程打开的文件数超过 64 时，操作系统就会新建一个<code>struct fdtable</code>（假定命名为 fdt1）以及一个<code>file_array</code>数组，而此时我们的<code>files_struct</code>里的<code>struct fdtable *fdt;</code>便会指向这个新表<code>fdt1</code>，此时<code>fdt1</code>的<code>struct file __rcu **fd;</code>成员就不是没有意义了，它会指向那块新建的 <code>file_array</code>数组，自此，这些所有的文件对象指针就能被串联起来了。如下图所示。</p>
+<p><img src="https://s2.loli.net/2023/01/17/Qlz4bckN5hrTHPg.png" alt="image.png"></p>
+<h2 id="文件对象（file）"><a href="#文件对象（file）" class="headerlink" title="文件对象（file）"></a>文件对象（file）</h2><p>​		<code>files_struct</code>结构体表征的是进程打开的所有文件的集合描述，而该 <code>file</code>结构体则是对单个被打开文件的文件的描述，也称为‘’文件对象‘’。该对象由相应的 open() 系统调用创建，由 close() 撤销。由于多个进程可以同时打开同一个物理文件，因此同一个磁盘文件可以对应多个文件对象，下面来看一下<code>struct file</code>的定义，其位于<code>linux/fs.h</code>中。</p>
+<pre><code class="c">struct file &#123;
+    // fu_list becomes invalid after file_free is called and queued via
+    // fu_rcuhead for RCU freeing
+    union &#123;
+        struct list_head    fu_list;
+        struct rcu_head     fu_rcuhead;//与 rcu 机制有关，前面有链接
+    &#125; f_u;
+    
+    struct path     f_path;
+#define f_dentry    f_path.dentry
+#define f_vfsmnt    f_path.mnt
+    
+    const struct file_operations    *f_op;
+    spinlock_t      f_lock;  /* f_ep_links, f_flags, no IRQ */
+    atomic_long_t       f_count;
+    unsigned int        f_flags;
+    fmode_t         f_mode;
+    loff_t          f_pos;
+    struct fown_struct  f_owner;
+    const struct cred   *f_cred;
+    struct file_ra_state    f_ra;
+
+    u64         f_version;
+#ifdef CONFIG_SECURITY
+    void            *f_security;
+#endif
+    /* needed for tty driver, and maybe others */
+    void            *private_data;
+
+#ifdef CONFIG_EPOLL
+    /* Used by fs/eventpoll.c to link all the hooks to this file */
+    struct list_head    f_ep_links;
+#endif /* #ifdef CONFIG_EPOLL */
+    struct address_space    *f_mapping;
+#ifdef CONFIG_DEBUG_WRITECOUNT
+    unsigned long f_mnt_write_state;
+#endif
+&#125;;
+</code></pre>
+<p>​		下面来看几个比较重要的成员：</p>
+<ul>
+<li><p><code>struct list_head    fu_list;</code>：文件对象链表，所有文件对象被串起来方便遍历和查找。</p>
+</li>
+<li><p><code>struct path     f_path;</code>：描述文件对象的路径，其中</p>
+<pre><code class="c">struct path &#123;
+    struct vfsmount *mnt;
+    struct dentry *dentry;
+&#125;
+</code></pre>
+<p><code>struct vfsmount *mnt;</code>时和挂载点有关的结构体，后面有介绍，<code>struct dentry *dentry;</code>则是指向该文件对象的 dentry 。</p>
+</li>
+<li><p><code>const struct file_operations    *f_op;</code>：同样的，指文件对象的操作函数指针，包含<code>(*read)</code>，<code>(*write)</code>，<code>(*open)</code>，<code>(*llseek)</code>等我们非常熟悉的文件操作。</p>
+</li>
+<li><p><code>atomic_long_t       f_count;</code>：文件对象引用计数，即当前有多少个进程在使用该文件。</p>
+</li>
+<li><p><code>unsigned int        f_flags;</code>：打开文件时所指定的标志。</p>
+</li>
+<li><p><code>fmode_t         f_mode;</code>：文件访问模式，如只读，只写等，掩码表示。</p>
+</li>
+<li><p><code>loff_t          f_pos;</code>：文件当前的位移量（文件指针）。</p>
+</li>
+<li><p><code>struct fown_struct  f_owner;</code>：文件所有者信息，包含 uid，gid等。</p>
+</li>
+<li><p><code>struct inode    *f_inode;</code>：通常我们认为 file 文件对象需要通过 dentry 才能找到对应的 inode，但当今的 Linux 实现或也有此成员，可快速找到作为 cached value 的 inode结构体。</p>
+</li>
+</ul>
+<p>​		不难发现，文件对象并不记录文件是否为脏等标志，因为文件对象并没有对应的磁盘数据。文件对象通过 f_dentry 指针找到对应的 dentry 结构体，再找到 inode 节点，而我们前面已经看到，在 inode 里记录着最后一次访问，修改文件，修改 inode 时间，以决定是否回写进磁盘。</p>
+<p>​		在 Linux 中，系统会为每个进程打开三个默认文件，即标准输入 STDIN_FILENO，标准输出 STDOUT_FILENO以及标准错误 STDERR_FILENO，因此当我们的进程打开一个自己的文件时，系统为指向该文件的指针 FILE* 关联一个文件描述符并添加在文件描述符表中，这个描述符一般就从 3 开始了。</p>
+<p><img src="https://s2.loli.net/2023/01/18/9kfFGxYRzHgMhsU.png" alt="image.png"></p>
+<h2 id="fs-strucut"><a href="#fs-strucut" class="headerlink" title="fs_strucut"></a>fs_strucut</h2><p>​		除了前面提到的进程打开的文件之外，每个进程也都有自己的根目录和当前工作目录，内核使用<code>struct fs_struct</code>来记录这些信息，进程描述符 <code>task_struct</code>的 fs 字段便是指向该进程的 <code>fs_struct</code> 结构。这个结构体就很简单了，下面来看一下定义，存在于<code>/linux/fs_struct.h</code>中。</p>
+<pre><code class="c">struct fs_struct &#123;
+    atomic_t count;
+    int users;	//暂时不清楚
+    spinlock_t lock;/*保护该结构体的锁*/
+    seqcount_t seq;
+    int umask;
+    int in_exec;
+    struct path root, pwd, altroot;
+ &#125;;
+</code></pre>
+<ul>
+<li><code>int umask;</code>：文件访问权限掩码表示，由 umask() 系统调用使用。</li>
+<li><code>atomic_t count;</code>：引用计数，表示共享该表的进程（线程）数。</li>
+<li><code>struct path root, pwd, altroot;</code>：<code>path</code>结构体前面已经提到了，这三个成员就记录了该进程执行目录，进程根目录，用户设置的替换目录 所指向的 dentry 目录项对象。</li>
+</ul>
+<p>​		到这里我们就分析完所有我们前面所提到的结构体了，友友们应该也对文件系统体系有了一个框架性的认识，下图总结了这几个重要结构体之间的关系。</p>
+<p><img src="https://s2.loli.net/2023/01/18/NUywPjBTEYSWiaV.png" alt="image.png"></p>
+<h1 id="和文件系统相关的其他标准结构"><a href="#和文件系统相关的其他标准结构" class="headerlink" title="和文件系统相关的其他标准结构"></a>和文件系统相关的其他标准结构</h1><p>​		除了以上几种 VFS 架构的基础对象之外，内核还使用了另外一些标准数据结构来管理文件系统的其他相关数据。</p>
+<h2 id="文件系统类型（file-system-type）"><a href="#文件系统类型（file-system-type）" class="headerlink" title="文件系统类型（file_system_type）"></a>文件系统类型（file_system_type）</h2><p>​		在前面的超级块<code>struct super_block</code>里，有一个成员是<code>struct file_system_type   *s_type;</code>表示文件系统类型结构体（比如是 EXT2 还是 FAT32），里边是对文件系统的细节描述。因此<code>file_system_type</code>结构用于描述具体的文件系统的类型信息。被 Linux 支持的文件系统，不管它有零个或多个实例被安装到系统中，同类型的文件系统都有且仅有一 个<code>file_system_type</code>结构，其定义于<code>linux/fs.h</code>中。</p>
+<pre><code class="c">struct file_system_type &#123;
+    const char *name;
+    int fs_flags;
+    
+    int (*get_sb) (struct file_system_type *, int, const char *, void *, struct vfsmount *);
+    void (*kill_sb) (struct super_block *);
+    
+    struct module *owner;
+    struct file_system_type * next;
+    struct hlist_head fs_supers;
+
+    // 锁相关
+    struct lock_class_key s_lock_key;
+    struct lock_class_key s_umount_key;
+    struct lock_class_key s_vfs_rename_key;
+    struct lock_class_key s_writers_key[SB_FREEZE_LEVELS];
+    struct lock_class_key i_lock_key;
+    struct lock_class_key i_mutex_key;
+    struct lock_class_key i_mutex_dir_key;
+&#125;;
+</code></pre>
+<ul>
+<li><code>const char *name;</code>：文件系统名称。</li>
+<li><code>int fs_flags;</code>：文件系统类型标志的 bitmap。</li>
+<li><code>int (*get_sb) (xx)</code>：方法，安装文件时会调用 <code>get_sb()</code> 从磁盘中读取超级块。</li>
+<li><code> void (*kill_sb) (struct super_block *);</code>方法，卸载文件系统时会调用此函数做一些清理工作。</li>
+<li><code>struct module *owner;</code>：文件系统模块。</li>
+<li><code>struct file_system_type * next;</code>：指向下一个文件系统类型的<code>file_system_type </code>结构体。</li>
+<li><code>struct hlist_head fs_supers;</code>：同一种文件类型的超级块形成一个链表，<code>fs_supers</code> 是这个链表的头。</li>
+</ul>
+<p>​		   不同类型的文件系统通过 <code>next</code> 字段形成一个链表，同一种文件系统类型的超级块通过 <code>s_instances</code> 字段连接在一起，并挂入 <code>fs_supers</code> 链表中。所有的 vfsmount 通过 mnt_list 字段形成一个链表。</p>
+<h2 id="安装点（vfsmount）"><a href="#安装点（vfsmount）" class="headerlink" title="安装点（vfsmount）"></a>安装点（vfsmount）</h2><p>​		<code>file_system_type</code>结构用于描述具体的文件系统的类型信息，而<code>vfsmount</code>便是某个文件系统的具体实例。例如 EXT2 类型的文件系统有 5 个，那么<code>file_system_type</code>结构体只有一个，描述 EXT2 信息，而<code>vfsmount</code>会被创建五个，用于描述安装的每一个 EXT2 实例，也被称为安装点，定义于<code>linux/mount.h</code>中。</p>
+<pre><code class="c">struct vfsmount &#123;
+    struct list_head mnt_hash;
+    struct vfsmount *mnt_parent;	/* fs we are mounted on */
+    struct dentry *mnt_mountpoint;	/* dentry of mountpoint */
+    struct dentry *mnt_root;	/* root of the mounted tree */
+    struct super_block *mnt_sb;	/* pointer to superblock */
+    struct list_head mnt_mounts;	/* list of children, anchored here */
+    struct list_head mnt_child;	/* and going through their mnt_child */
+    
+    /* 安装标志 */
+    int mnt_flags;
+    /* 挂载的设备名字，如/dev/dsk/hda1 */
+    const char *mnt_devname;
+    
+    /* 虚拟文件系统命名空间中的链表节点 */
+    struct list_head mnt_list;
+    struct list_head mnt_expire;	/* link in fs-specific expiry list */
+    struct list_head mnt_share;	/* circular list of shared mounts */
+    struct list_head mnt_slave_list;/* list of slave mounts */
+    struct list_head mnt_slave;	/* slave list entry */
+    struct vfsmount *mnt_master;	/* slave is on master-&gt;mnt_slave_list */
+    
+    /* 所在的虚拟文件系统命名空间*/
+    struct mnt_namespace *mnt_ns;	/* containing namespace */
+    int mnt_id;			/* mount identifier */
+    int mnt_group_id;		/* peer group identifier */
+    /*
+     * We put mnt_count &amp; mnt_expiry_mark at the end of struct vfsmount
+     * to let these frequently modified fields in a separate cache line
+     * (so that reads of mnt_flags wont ping-pong on SMP machines)
+     */
+    atomic_t mnt_count;
+    int mnt_expiry_mark;		/* true if marked for expiry */
+    int mnt_pinned;
+    int mnt_ghosts;
+#ifdef CONFIG_SMP
+    int *mnt_writers;
+#else
+    int mnt_writers;
+#endif
+&#125;;
+</code></pre>
+<ul>
+<li><code>struct list_head mnt_hash;</code>：全局散列表。</li>
+<li><code>struct vfsmount *mnt_parent;</code>：父文件系统的挂载点。</li>
+<li><code>struct dentry *mnt_mountpoint;</code>： 父文件系统中该挂载点的 dentry。</li>
+<li><code>struct dentry *mnt_root;</code>：当前文件系统中该挂载点的 dentry。</li>
+<li><code>struct super_block *mnt_sb;</code>：指向文件系统的 super_block 。</li>
+<li><code>struct list_head mnt_mounts;</code>：该挂载点下面的子挂载点列表。</li>
+<li><code>struct list_head mnt_child;</code>：父文件系统的子挂载点的列表节点。</li>
+<li><code>const char *mnt_devname;</code>：挂载的设备名。</li>
+</ul>
+<p>​		最后，用这幅图来总结一下<code>struct file_system_type </code>，<code>struct vfsmount</code>以及<code>struct super_block</code>之间的关系。</p>
+<p><img src="https://s2.loli.net/2023/01/18/xMGzm5QgSpiHUE3.png" alt="image.png"></p>
+<p>​		以及我们再来看一个实例，在下图中，根文件系统为<code>squashfs</code>，根目录为<code>“/”</code>，然后创建<code>/tmp</code>目录，并挂载为<code>ramfs</code>，之后又创建了<code>/tmp/usbdisk/volume9</code>和<code>/tmp/usbdisk/volume1</code>两个目录，并将<code>/tmp/dev/sda1</code>和<code>/tmp/dev/sdb1</code>两个分区挂载到这两个目录上。挂载完成后，VFS 中相关的数据结构的关系如图所示。</p>
+<p><img src="https://s2.loli.net/2023/01/18/WyFNLAr8SXUBoG2.png" alt="image.png"></p>
+<p>​		Linux 支持相当多种类的文件系统，从本地文件系统（如 EXT2 等）到网络文件系统（如 NFS 等），Linux 标准内核已支持当年文件系统超过60种，多亏 VFS 层提供的统一框架，使得它们可以很轻松地与上层应用进行交互。</p>
+<p>​		到此，本章的故事总算也该讲完了，关于文件系统其实还有很重要的一块知识没谈到，那就是各种缓存机制，那么下一章我们可能再进一步分析一下文件系统相关的系统调用流程，也会谈到缓存，或自己动手操作一下相关的代码。最后，快过年了，也祝友友们新年快乐~</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://www.chaceq.love">sqq</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://www.chaceq.love/2023/01/16/04Linux_fileSystem/">https://www.chaceq.love/2023/01/16/04Linux_fileSystem/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/2.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/07/05/05task_struct/"><img class="prev-cover" src="/" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Linux进程线程源码浅析</div></div></a></div><div class="next-post pull-right"><a href="/2023/01/13/03Linux_kernel_1/"><img class="next-cover" src="/" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Linux内核分析应用一 - 多进程共享内存内核驱动模块</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/2.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">sqq</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Welcome to my Blog.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95"><span class="toc-number">1.</span> <span class="toc-text">Linux文件系统技术内幕</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.</span> <span class="toc-text">虚拟文件系统</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%AD%E7%9A%84%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">文件在磁盘中的组织形式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B6%85%E7%BA%A7%E5%9D%97-super-block"><span class="toc-number">3.1.</span> <span class="toc-text">超级块(super block)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E8%8A%82%E7%82%B9%EF%BC%88index-node%EF%BC%8Cinode%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">索引节点（index node，inode）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">文件在内存中的组织形式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95%E9%A1%B9-dentry"><span class="toc-number">4.1.</span> <span class="toc-text">目录项(dentry)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6%E8%A1%A8%EF%BC%88files-struct%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">用户打开文件表（files_struct）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%AF%B9%E8%B1%A1%EF%BC%88file%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">文件对象（file）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fs-strucut"><span class="toc-number">4.4.</span> <span class="toc-text">fs_strucut</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%92%8C%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E7%9A%84%E5%85%B6%E4%BB%96%E6%A0%87%E5%87%86%E7%BB%93%E6%9E%84"><span class="toc-number">5.</span> <span class="toc-text">和文件系统相关的其他标准结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%B1%BB%E5%9E%8B%EF%BC%88file-system-type%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">文件系统类型（file_system_type）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E7%82%B9%EF%BC%88vfsmount%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">安装点（vfsmount）</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/07/05/05task_struct/" title="Linux进程线程源码浅析">Linux进程线程源码浅析</a><time datetime="2023-07-05T12:34:46.888Z" title="Created 2023-07-05 20:34:46">2023-07-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/01/16/04Linux_fileSystem/" title="Linux文件系统技术内幕">Linux文件系统技术内幕</a><time datetime="2023-01-16T05:36:44.673Z" title="Created 2023-01-16 13:36:44">2023-01-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/01/13/03Linux_kernel_1/" title="Linux内核分析应用一 - 多进程共享内存内核驱动模块">Linux内核分析应用一 - 多进程共享内存内核驱动模块</a><time datetime="2023-01-13T14:18:40.830Z" title="Created 2023-01-13 22:18:40">2023-01-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/12/28/02malloc_1/" title="malloc内存管理浅析一 - 前奏">malloc内存管理浅析一 - 前奏</a><time datetime="2022-12-28T12:20:52.416Z" title="Created 2022-12-28 20:20:52">2022-12-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/12/05/01analy/" title="cctools源码分析">cctools源码分析</a><time datetime="2022-12-05T13:01:46.744Z" title="Created 2022-12-05 21:01:46">2022-12-05</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By sqq</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="/js/sky.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

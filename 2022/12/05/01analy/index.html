@@ -1,0 +1,567 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>cctools源码分析 | chaceq.love</title><meta name="author" content="sqq"><meta name="copyright" content="sqq"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="main.c示例汇编文件.global syscall syscall:     mov %rdi, %rax     mov %rsi, %rdi     mov %rdx, %rsi     mov %rcx, %rdx     mov %r8, %rcx     mov %r9, %r8     mov 8(%rsp), %r9     syscall     ret  .global _s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cctools源码分析">
+<meta property="og:url" content="https://www.chaceq.love/2022/12/05/01analy/index.html">
+<meta property="og:site_name" content="chaceq.love">
+<meta property="og:description" content="main.c示例汇编文件.global syscall syscall:     mov %rdi, %rax     mov %rsi, %rdi     mov %rdx, %rsi     mov %rcx, %rdx     mov %r8, %rcx     mov %r9, %r8     mov 8(%rsp), %r9     syscall     ret  .global _s">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://www.chaceq.love/img/2.jpg">
+<meta property="article:published_time" content="2022-12-05T13:01:46.744Z">
+<meta property="article:modified_time" content="2022-12-05T13:14:35.572Z">
+<meta property="article:author" content="sqq">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.chaceq.love/img/2.jpg"><link rel="shortcut icon" href="/img/2.jpg"><link rel="canonical" href="https://www.chaceq.love/2022/12/05/01analy/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'cctools源码分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-12-05 21:14:35'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><script src="https://cyan-blog.oss-cn-shenzhen.aliyuncs.com/cdn/js/three.min.js"></script> <link rel="stylesheet" href="/css/transpancy.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/2.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><hr/></div></div><div class="canvas-container" id="canvas"></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">chaceq.love</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">cctools源码分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2022-12-05T13:01:46.744Z" title="Created 2022-12-05 21:01:46">2022-12-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2022-12-05T13:14:35.572Z" title="Updated 2022-12-05 21:14:35">2022-12-05</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="cctools源码分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="main-c"><a href="#main-c" class="headerlink" title="main.c"></a>main.c</h1><h2 id="示例汇编文件"><a href="#示例汇编文件" class="headerlink" title="示例汇编文件"></a>示例汇编文件</h2><pre><code class="assembly">.global syscall
+syscall:
+    mov %rdi, %rax
+    mov %rsi, %rdi
+    mov %rdx, %rsi
+    mov %rcx, %rdx
+    mov %r8, %rcx
+    mov %r9, %r8
+    mov 8(%rsp), %r9
+    syscall
+    ret
+
+.global _start
+_start:
+    mov (%rsp), %rdi
+    lea 8(%rsp), %rsi
+    call main
+    mov %rax, %rdi
+    mov $60, %eax
+    syscall
+</code></pre>
+<h2 id="函数一：read-asm-from-filepath-infile"><a href="#函数一：read-asm-from-filepath-infile" class="headerlink" title="函数一：read_asm_from_filepath(infile)"></a>函数一：read_asm_from_filepath(infile)</h2><blockquote>
+<p>负责从源文件中读取所有汇编代码，返回一个Vector类型的指针。</p>
+</blockquote>
+<h4 id="调用read-entire-file-filepath"><a href="#调用read-entire-file-filepath" class="headerlink" title="调用read_entire_file(filepath);"></a>调用<a href="#read_entire_file(filepath);">read_entire_file(filepath);</a></h4><blockquote>
+<p>src指针获得存放了所有源汇编文件字符的char ret[]数组地址。</p>
+<p>如图为 解析到的*src值。</p>
+<p><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116010431245.png" alt="image-20221116010431245"></p>
+</blockquote>
+<h4 id="返回-read-all-asm-src-filepath-read-all-asm-src-filepath"><a href="#返回-read-all-asm-src-filepath-read-all-asm-src-filepath" class="headerlink" title="返回[read_all_asm(src, filepath);](#read_all_asm(src, filepath))"></a>返回[read_all_asm(src, filepath);](#read_all_asm(src, filepath))</h4><blockquote>
+<p>该函数接收前面传来的源汇编文件字符的char ret[]数组地址，返回结构化之后的链表，类似于编译器中的TAC结构体链。并返回给上层调用函数 main.c。</p>
+<p>这里返回的是一个Code_list链表，我们可以看到：这里的size其实就是汇编语句的条数。</p>
+<p>​																			<img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116011326465.png" alt="image-20221116011326465"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116012317434.png" alt="image-20221116012317434"></p>
+<p>并且，从下一个处理该 Vector *code的函数也可以看到有一个关键的循环：</p>
+<pre><code class="c">for (int i = 0; i &lt; vector_size(code_list); i++)&#123;&#125;
+//进入 vector_size(code_list)可以发现
+int vector_size(Vector *vec) &#123; return vec-&gt;size; &#125;
+实际上就是我们之前提到的 size,该文件里为19.与汇编源文件相符合。
+</code></pre>
+</blockquote>
+<h2 id="函数二：assemble-code-code"><a href="#函数二：assemble-code-code" class="headerlink" title="函数二：assemble_code(code);"></a>函数二：assemble_code(code);</h2><blockquote>
+<p>接收结构化之后的汇编代码链表。</p>
+<pre><code>ObjectImage *assemble_code(Vector *code) &#123; return assemble_code_detail(code); &#125;
+</code></pre>
+</blockquote>
+<h4 id="因此接下来分析-assemble-code-detail-Vector-code-list-ObjectImage-assemble-code-detail-Vector-code-list"><a href="#因此接下来分析-assemble-code-detail-Vector-code-list-ObjectImage-assemble-code-detail-Vector-code-list" class="headerlink" title="因此接下来分析[assemble_code_detail(Vector *code_list);](#ObjectImage *assemble_code_detail(Vector *code_list);)"></a>因此接下来分析[assemble_code_detail(Vector *code_list);](#ObjectImage *assemble_code_detail(Vector *code_list);)</h4><blockquote>
+<p>返回之后主函数使用ObjectImage *obj &#x3D; assemble_code(code);来接收其返回值。</p>
+</blockquote>
+<pre><code>struct ObjectImage &#123;
+    Vector *text;    // vector&lt;int&gt;
+    Vector *data;    // vector&lt;int&gt;
+    Vector *rela;    // vector&lt;RelaEntry *&gt;
+    Vector *strtab;  // vecotr&lt;int&gt;
+    Vector *symtab;  // vector&lt;SymbolInfo *&gt;
+
+    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;
+    Map *label2offset;  // map&lt;char *, SectionOffset&gt;
+&#125;;
+</code></pre>
+<blockquote>
+<p>从调试信息来看，该结构体实际上记录了各个段的具体信息，以下是具体调试信息：</p>
+<p>​								<img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109004948160.png" alt="image-20221109004948160"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109005027587.png" alt="image-20221109005027587"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109005053501.png" alt="image-20221109005053501"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109005127283.png" alt="image-20221109005127283"></p>
+</blockquote>
+<p>自此分析过程全部结束，下一步:</p>
+<pre><code>FILE *fh = fopen(outfile, &quot;wb&quot;);
+</code></pre>
+<p>说明该往目标文件写二进制数据了。</p>
+<h2 id="函数三：dump-object-image-obj-fh"><a href="#函数三：dump-object-image-obj-fh" class="headerlink" title="函数三：dump_object_image(obj, fh);"></a>函数三：dump_object_image(obj, fh);</h2><h4 id="分析-dump-object-image-obj-fh-dump-object-image-obj-fh"><a href="#分析-dump-object-image-obj-fh-dump-object-image-obj-fh" class="headerlink" title="分析[dump_object_image(obj, fh);](#dump_object_image(obj, fh);)"></a>分析[dump_object_image(obj, fh);](#dump_object_image(obj, fh);)</h4><h2 id="read-entire-file-filepath"><a href="#read-entire-file-filepath" class="headerlink" title="read_entire_file(filepath);"></a>read_entire_file(filepath);</h2><blockquote>
+<p> 读入文件的主要函数.</p>
+</blockquote>
+<pre><code>while ((ch = fgetc(fh)) != EOF) string_builder_append(sb, ch);
+</code></pre>
+<p>以上这一句是分析每一个char的语句。</p>
+<pre><code>int fgetc(FILE *stream)
+&#123;
+    char buf[1];
+    int res = read(stream-&gt;fd, buf, 1);
+    if (res &lt;= 0) return EOF;
+    return buf[0] &amp; 0xff;
+&#125;
+</code></pre>
+<p>在fgetc函数里面，通过read函数读入每一个字符，返回给buf[0]，然后取第八位传给while循环。</p>
+<p>然后进入string_builder_append(sb, ch); 函数。</p>
+<pre><code>char string_builder_append(StringBuilder *sb, char ch)
+&#123;
+    vector_push_back(sb-&gt;data, (void *)ch);
+    return ch;
+&#125;
+</code></pre>
+<p>该函数主要操主调函数传下来的 StringBuilder *sb。</p>
+<p>其中 sb-&gt;data里的size表示字符数。</p>
+<p>返回 string_builder_get(sb); 该函数。</p>
+<pre><code>char *string_builder_get(StringBuilder *sb)
+&#123;
+    int size = vector_size(sb-&gt;data);
+    char *ret = safe_malloc(size + 1);
+    for (int i = 0; i &lt; size; i++) ret[i] = (char)vector_get(sb-&gt;data, i);
+    ret[size] = &#39;\0&#39;;
+    return ret;
+&#125;
+</code></pre>
+<p>该函数将采集到的所有字符放入 char ret[]数组中并返回主调函数。 </p>
+<p>然后fclose源 .s文件</p>
+<p>最后，该函数向上层主调函数返回了 char ret[]数组。</p>
+<blockquote>
+<p>&#x3D;&#x3D;自此：文件读入结束。&#x3D;&#x3D;</p>
+</blockquote>
+<h2 id="read-all-asm-src-filepath"><a href="#read-all-asm-src-filepath" class="headerlink" title="read_all_asm(src, filepath);"></a>read_all_asm(src, filepath);</h2><blockquote>
+<p>传入参数：char ret[]数组，原汇编文件。返回Vector</p>
+</blockquote>
+<h4 id="init-source-src-filepath"><a href="#init-source-src-filepath" class="headerlink" title="init_source(src, filepath);"></a>init_source(src, filepath);</h4><p>该函数首先分析了文件路径 .&#x2F;system.s 存在一个 Source source; 结构体中（这是一个全局结构体）。</p>
+<pre><code>typedef struct &#123;
+    int line, column;
+    Vector *line2length;
+    char *src;// ==汇编代码==
+    // example: &quot;/tmp/1.c&quot; -&gt; cwd: &quot;/tmp/&quot;
+    char *cwd;  // current working directory with &#39;/&#39;
+    char *filepath;
+&#125; Source;
+</code></pre>
+<p>接下来是一个大循环，每一个循环分析一个汇编语句，比如第一个循环是 .global，再比如 mov %rdi, %rax。</p>
+<pre><code>while (speekch() != &#39;\0&#39;) &#123;
+...
+&#125;
+</code></pre>
+<ol>
+<li><p>循环的第一部分是去掉类似注释的东西。</p>
+</li>
+<li><p>循环的第二部分是解析一个词语。分析char *str &#x3D; [read_asm_token();](# read_asm_token();)，返回比如 .global</p>
+</li>
+<li><p>接下来分析该词语的类别: label，标号提前处理。</p>
+</li>
+<li><p>接下来建立几个哈希表，分别把一系列汇编命令类别打进去，画风如下:（注意：这一部分只做一次，第二次循环开始KeyValue *map_insert(Map *map, const char *key, void *item)里的vector_push_back(map-&gt;data, kv);就不会再插入了）。</p>
+</li>
+<li><pre><code>Map *binop_table = new_map();
+map_insert(binop_table, &quot;mov&quot;, (void *)INST_MOV);
+map_insert(binop_table, &quot;movl&quot;, (void *)INST_MOVL);
+map_insert(binop_table, &quot;movsbl&quot;, (void *)INST_MOVSBL);
+map_insert(binop_table, &quot;movslq&quot;, (void *)INST_MOVSLQ);
+        ...
+Map *unary_table = new_map();
+map_insert(unary_table, &quot;push&quot;, (void *)INST_PUSH);
+map_insert(unary_table, &quot;pop&quot;, (void *)INST_POP);
+map_insert(unary_table, &quot;idiv&quot;, (void *)INST_IDIV);
+        ...
+</code></pre>
+</li>
+<li><p>一旦查到了就进入处理的部分！</p>
+</li>
+</ol>
+<p>接下来分析一下详细处理的部分。</p>
+<pre><code>if (kv = map_lookup(binop_table, str)) &#123;
+            Code *lhs = read_asm_param();
+            sexpect_ch(&#39;,&#39;);
+            Code *rhs = read_asm_param();
+            vector_push_back(code, new_binop_code((int)kv_value(kv), lhs, rhs));
+            continue;
+        &#125;
+</code></pre>
+<ol>
+<li><p>先后两个 <a href="#read_asm_param()">read_asm_param()</a>分别分析左右操作数。</p>
+</li>
+<li><p>接着用 vector_push_back(code, new_binop_code((int)kv_value(kv), lhs, rhs));将其整合到一起。即将信息填充给第一个参数 code。我们从void vector_push_back(Vector *vec, void *item)的源码就可以看到填充过程。</p>
+</li>
+<li><pre><code>void vector_push_back(Vector *vec, void *item)
+&#123;
+    if (vec-&gt;data == NULL || vec-&gt;size == vec-&gt;rsved_size) &#123;
+        vec-&gt;rsved_size *= 2;
+        void **ndata = (void **)safe_malloc(sizeof(void *) * vec-&gt;rsved_size);
+        memcpy(ndata, vec-&gt;data, vec-&gt;size * sizeof(void *));
+        vec-&gt;data = ndata;
+    &#125;
+
+    vec-&gt;data[vec-&gt;size++] = item;
+&#125;
+//这里的 vec参数就是传进来的code的地址.
+</code></pre>
+</li>
+<li><p>continue;返回继续循环。</p>
+</li>
+</ol>
+<blockquote>
+<p>最后就是返回 Vector * code 。我们知道，每一个 code都是一个汇编语句的结构体。所以  Vector * code  就是整个结构体链，就类似于我们的TAC链条，至此可以得出结论:&#x3D;&#x3D;该函数的作用就是将源汇编代码转换成结构体链条&#x3D;&#x3D;</p>
+</blockquote>
+<p>over,返回上一层<a href="#read_asm_from_filepath(infile)">Vector *read_asm_from_filepath(char *filepath)</a>。</p>
+<h2 id="read-asm-param"><a href="#read-asm-param" class="headerlink" title="read_asm_param();"></a>read_asm_param();</h2><blockquote>
+<p>该函数总结来说就是分析一个汇编语句的其中一个操作数的内容。&#x3D;&#x3D;例如：mov %rax, %rdi&#x3D;&#x3D;的 %rax。</p>
+</blockquote>
+<pre><code>switch (ch) &#123;
+        case &#39;%&#39;:
+            return str2reg(read_asm_token());
+
+        case &#39;$&#39;: &#123;
+            getch();  // already skipped space
+            return new_value_code(read_asm_ival());
+        &#125;
+
+        case &#39;(&#39;:
+            return new_addrof_code(read_asm_memory(), 0);
+    &#125;
+</code></pre>
+<p>拿第一句来分析 ‘%’代表后面有寄存器。</p>
+<p>​	read_asm_token()函数：返回一个寄存器，例如 %rax，返回给str2reg(char *src);</p>
+<p>​	str2reg(char *src);里又是一系列哈希表打入操作，将寄存器们打入到Map,以下画风:</p>
+<pre><code>Map *map = new_map();
+    map_insert(map, &quot;%al&quot;, nbyte_reg(1, 0));
+    map_insert(map, &quot;%dil&quot;, nbyte_reg(1, 1));
+    map_insert(map, &quot;%sil&quot;, nbyte_reg(1, 2));
+    map_insert(map, &quot;%dl&quot;, nbyte_reg(1, 3));
+    map_insert(map, &quot;%cl&quot;, nbyte_reg(1, 4));
+    //其中nbyte_reg(1, 4))是Code类型的.
+</code></pre>
+<p>​	看看这个函数的返回值</p>
+<pre><code>return new_addrof_label_code(read_asm_memory(), label);
+</code></pre>
+<p>而这个new_addrof_label_code函数返回的是Code*类型，因此就不难分析该函数最终完成了什么事情了。</p>
+<blockquote>
+<p>总结，该函数将指令的一个操作数存进了一个Code对象中并返回其地址。对了，Code对象定义如下:</p>
+<pre><code>typedef struct Code Code;
+struct Code &#123;
+    int kind;
+
+    Code *lhs, *rhs;
+    int ival;
+    char *sval;  // size is ival
+    char *label;
+    Vector *read_dep;
+    int can_be_eliminated;
+&#125;;
+</code></pre>
+</blockquote>
+<p>​	</p>
+<h2 id="read-asm-token"><a href="#read-asm-token" class="headerlink" title="read_asm_token();"></a>read_asm_token();</h2><p>首先建立一个 StringBuilder *sb &#x3D; new_string_builder();结构体</p>
+<p>然后调用 string_builder_append(sb, sgetch());这个函数是分析每一个字符的。</p>
+<p>后面有个循环就是分析每一个字符。</p>
+<pre><code>while (1) &#123;
+        int ch = peekch();
+        if (!isalnum(ch) &amp;&amp; ch != &#39;_&#39; &amp;&amp; ch != &#39;.&#39; &amp;&amp; ch != &#39;:&#39;) break;
+        string_builder_append(sb, getch());
+    &#125;
+</code></pre>
+<blockquote>
+<p>&#x3D;&#x3D;最后返回一个词语，比如 .global&#x3D;&#x3D;</p>
+</blockquote>
+<h2 id="assemble-code-code"><a href="#assemble-code-code" class="headerlink" title="assemble_code(code);"></a>assemble_code(code);</h2><h2 id="SymbolInfo-get-symbol-info-char-label"><a href="#SymbolInfo-get-symbol-info-char-label" class="headerlink" title="SymbolInfo *get_symbol_info(char *label)"></a>SymbolInfo *get_symbol_info(char *label)</h2><p>传进来的其实是标号 ，返回类型 SymbolInfo * 。</p>
+<pre><code>typedef struct &#123;
+    int index;
+    char *label;
+    int st_name;
+    int st_info;
+&#125; SymbolInfo;
+</code></pre>
+<p>接下来定义了一个 SymbolInfo *symbol 并进行了赋值。</p>
+<pre><code>SymbolInfo *symbol = (SymbolInfo *)safe_malloc(sizeof(SymbolInfo));
+    symbol-&gt;index = vector_size(target_objimg-&gt;symtab) + 4;
+    symbol-&gt;label = label;
+    symbol-&gt;st_name = vector_size(target_objimg-&gt;strtab);
+    symbol-&gt;st_info = 0;
+</code></pre>
+<p>最后的三个函数，暂时没法分析，哈哈。</p>
+<pre><code>add_string(target_objimg-&gt;strtab, label, strlen(label) + 1);
+map_insert(target_objimg-&gt;symbol_map, label, symbol);
+vector_push_back(target_objimg-&gt;symtab, symbol);
+</code></pre>
+<blockquote>
+<p>行，返回上面那个SymbolInfo *symbol ，完事。</p>
+</blockquote>
+<h2 id="ObjectImage-assemble-code-detail-Vector-code-list"><a href="#ObjectImage-assemble-code-detail-Vector-code-list" class="headerlink" title="ObjectImage *assemble_code_detail(Vector *code_list);"></a>ObjectImage *assemble_code_detail(Vector *code_list);</h2><blockquote>
+<p>这里接收一个 Vector* 的参数，参数的size就是汇编代码的条数，实际上也是该链表的节点数。</p>
+</blockquote>
+<p>该函数有一个很重要的局部变量就是ObjectImage *objimg</p>
+<blockquote>
+<p>第一句就有ObjectImage *objimg &#x3D; (ObjectImage *)safe_malloc(sizeof(ObjectImage));</p>
+<pre><code>struct ObjectImage &#123;
+    Vector *text;    // vector&lt;int&gt;
+    Vector *data;    // vector&lt;int&gt;
+    Vector *rela;    // vector&lt;RelaEntry *&gt;
+    Vector *strtab;  // vecotr&lt;int&gt;
+    Vector *symtab;  // vector&lt;SymbolInfo *&gt;
+
+    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;
+    Map *label2offset;  // map&lt;char *, SectionOffset&gt;
+&#125;;
+</code></pre>
+</blockquote>
+<p>接下来便是给objimg的每一个成员malloc内存。</p>
+<pre><code>    objimg-&gt;text = new_vector();
+    objimg-&gt;data = new_vector();
+    objimg-&gt;rela = new_vector();
+    objimg-&gt;strtab = new_vector();
+    vector_push_back(objimg-&gt;strtab, 0x00);
+    objimg-&gt;symtab = new_vector();
+    objimg-&gt;symbol_map = new_map();
+    objimg-&gt;label2offset = new_map();
+</code></pre>
+<p>接下来的init_target_objimg(objimg);很简单，就是造一个全局对象 ObjectImage * target_objimg，然后把上面的赋过去。set_current_section(TEXT_SECTION);同样设置一个全局current_section并得到赋值。</p>
+<blockquote>
+<p>在这里请务必注意有全局和局部两个 objimg。</p>
+</blockquote>
+<blockquote>
+<p>&#x3D;&#x3D;接下来的这个for循环就是分析每一个节点了&#x3D;&#x3D;</p>
+</blockquote>
+<ol>
+<li><p>首先<code>Code *code = vector_get(code_list, i);</code>便是获取该节点。</p>
+</li>
+<li><p>举个例子，第二句汇编<code>syscall:</code></p>
+<p><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116012713779.png" alt="image-20221116012713779"></p>
+</li>
+<li><p>接下来 switch (code-&gt;kind)。</p>
+<p>比如第一句是 .global 跳转到836行</p>
+<pre><code>case CD_GLOBAL:
+                get_symbol_info(code-&gt;label)-&gt;st_info |= 0x10;
+                break;
+</code></pre>
+<p>浅浅分析一下下面的函数 [get_symbol_info(code-&gt;label)](#SymbolInfo *get_symbol_info(char *label))。</p>
+<p>上面那个真难分析，咱们来分析一个mov语句看看。</p>
+<pre><code>case INST_MOV:
+    if (is_reg64(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs)) &#123;
+                    emit_byte(rex_prefix_reg_ext(1, code-&gt;lhs, code-&gt;rhs));
+                    emit_byte(0x89);
+                    emit_byte(
+                        modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));
+                    break;
+                &#125;
+   ...
+</code></pre>
+<p>首先case里面的很多if语句，其实是分析mov语句的操作数类型的，如下面:</p>
+<pre><code>if (is_reg64(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs))&#123;&#125;
+if (is_reg32(code-&gt;lhs) &amp;&amp; is_reg32(code-&gt;rhs))&#123;&#125;
+if (is_imm(code-&gt;lhs) &amp;&amp; is_reg32(code-&gt;rhs))&#123;&#125;
+if (is_addrof(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs))&#123;&#125;
+if (is_reg8(code-&gt;lhs) &amp;&amp; is_addrof(code-&gt;rhs))&#123;&#125;
+...
+</code></pre>
+<p>例如第一句 mov %rdi, %rax 显然应该进入第一个if语句。</p>
+<p>if里面实际上是三个emit_byte函数，这里面实际上是另一个函数add_byte。</p>
+<pre><code>emit_byte(rex_prefix_reg_ext(1, code-&gt;lhs, code-&gt;rhs));
+emit_byte(0x89);
+emit_byte(modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));
+</code></pre>
+<pre><code>void emit_byte(int val0) &#123; add_byte(buffer_to_emit, val0); &#125;
+</code></pre>
+<p>这里的buffer_to_emit是一个全局的结构体，有定义过：Vector *buffer_to_emit &#x3D; NULL;</p>
+<p>讲道理，这里没那么好分析，因为主要都是涉及到数字的位运算。</p>
+<blockquote>
+<p>从这里大致推断，&#x3D;&#x3D;实际上是在填充全局的 Vector *buffer_to_emit。&#x3D;&#x3D;</p>
+</blockquote>
+</li>
+</ol>
+<p>接下来的一个 for 循环时涉及到 symtab 节的。</p>
+<pre><code>for (int i = 0; i &lt; vector_size(target_objimg-&gt;symtab); i++) &#123;
+        SymbolInfo *sym = (SymbolInfo *)vector_get(target_objimg-&gt;symtab, i);
+        if (map_lookup(target_objimg-&gt;label2offset, sym-&gt;label) == NULL)
+            sym-&gt;st_info |= 0x10;
+    &#125;
+</code></pre>
+<p>再接下来分析那个 objimg-&gt;rela。</p>
+<p>最后 set_current_section(TEXT_SECTION);以及分析label_placeholders。注释很关键：&#x2F;&#x2F; write offset to label placeholders。</p>
+<blockquote>
+<p>最后，返回 ObjectImage *objimg。主函数使用ObjectImage *obj &#x3D; assemble_code(code);进行接收。其实可以从调试看出很多信息。ok,返回！</p>
+</blockquote>
+<h2 id="dump-object-image-obj-fh"><a href="#dump-object-image-obj-fh" class="headerlink" title="dump_object_image(obj, fh);"></a>dump_object_image(obj, fh);</h2><blockquote>
+<p>该函数接收两个参数，其一为前面的 ObjectImage *obj ，它存储了所有的段表及符号信息，其二便是目标文件指针。</p>
+</blockquote>
+<p>第一个函数 init_target_objimg(objimg);同样为了初始化 ObjectImage *target_objimg &#x3D; objimg;的全局对象。</p>
+<p>第二个函数 set_buffer_to_emit(dumped);同样为了初始化 Vector *buffer_to_emit &#x3D; buffer; 的全局对象。</p>
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><h3 id="Vector"><a href="#Vector" class="headerlink" title="Vector"></a>Vector</h3><p>该项目均采用vector数据结构</p>
+<pre><code class="c">struct Vector &#123;
+    int size, rsved_size;
+    void **data;
+&#125;;
+</code></pre>
+<h3 id="KeyValue"><a href="#KeyValue" class="headerlink" title="KeyValue"></a>KeyValue</h3><p>key存字符串</p>
+<p>value存对应的值，用于匹配查询</p>
+<pre><code class="c">struct KeyValue &#123;
+    const char *key;
+    void *value;
+&#125;;
+</code></pre>
+<h3 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h3><pre><code class="c">struct Map &#123;
+    Vector *data;
+&#125;;
+</code></pre>
+<h3 id="StringBuilder"><a href="#StringBuilder" class="headerlink" title="StringBuilder"></a>StringBuilder</h3><pre><code class="c">struct StringBuilder &#123;
+    Vector *data;
+&#125;;
+</code></pre>
+<h3 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h3><p>src用于存储输入的汇编文件</p>
+<p>line和cloumn表示正在处理的行列</p>
+<pre><code class="c">typedef struct &#123;
+    int line, column;
+    Vector *line2length;
+    char *src;
+    // example: &quot;/tmp/1.c&quot; -&gt; cwd: &quot;/tmp/&quot;
+    char *cwd;  // current working directory with &#39;/&#39;
+    char *filepath;
+&#125; Source;
+</code></pre>
+<h3 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h3><p>用于存储汇编指令</p>
+<p>lhs表示左操作数，rhs表示右操作数</p>
+<pre><code class="c">typedef struct Code Code;
+struct Code &#123;
+    int kind;
+
+    Code *lhs, *rhs;
+    int ival;
+    char *sval;  // size is ival
+    char *label;
+    Vector *read_dep;
+    int can_be_eliminated;
+&#125;;
+</code></pre>
+<h3 id="ObjectImage"><a href="#ObjectImage" class="headerlink" title="ObjectImage"></a>ObjectImage</h3><pre><code class="c">struct ObjectImage &#123;
+    Vector *text;    // vector&lt;int&gt;
+    Vector *data;    // vector&lt;int&gt;
+    Vector *rela;    // vector&lt;RelaEntry *&gt;
+    Vector *strtab;  // vecotr&lt;int&gt;
+    Vector *symtab;  // vector&lt;SymbolInfo *&gt;
+
+    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;
+    Map *label2offset;  // map&lt;char *, SectionOffset&gt;
+&#125;;	
+</code></pre>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://www.chaceq.love">sqq</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://www.chaceq.love/2022/12/05/01analy/">https://www.chaceq.love/2022/12/05/01analy/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/2.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2022/12/28/02malloc_1/"><img class="prev-cover" src="/" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">malloc内存管理浅析一 - 前奏</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/2.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">sqq</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Welcome to my Blog.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#main-c"><span class="toc-number">1.</span> <span class="toc-text">main.c</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E6%B1%87%E7%BC%96%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">示例汇编文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%B8%80%EF%BC%9Aread-asm-from-filepath-infile"><span class="toc-number">1.2.</span> <span class="toc-text">函数一：read_asm_from_filepath(infile)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E7%94%A8read-entire-file-filepath"><span class="toc-number">1.2.0.1.</span> <span class="toc-text">调用read_entire_file(filepath);</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E-read-all-asm-src-filepath-read-all-asm-src-filepath"><span class="toc-number">1.2.0.2.</span> <span class="toc-text">返回[read_all_asm(src, filepath);](#read_all_asm(src, filepath))</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%BA%8C%EF%BC%9Aassemble-code-code"><span class="toc-number">1.3.</span> <span class="toc-text">函数二：assemble_code(code);</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%A0%E6%AD%A4%E6%8E%A5%E4%B8%8B%E6%9D%A5%E5%88%86%E6%9E%90-assemble-code-detail-Vector-code-list-ObjectImage-assemble-code-detail-Vector-code-list"><span class="toc-number">1.3.0.1.</span> <span class="toc-text">因此接下来分析[assemble_code_detail(Vector *code_list);](#ObjectImage *assemble_code_detail(Vector *code_list);)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%B8%89%EF%BC%9Adump-object-image-obj-fh"><span class="toc-number">1.4.</span> <span class="toc-text">函数三：dump_object_image(obj, fh);</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E6%9E%90-dump-object-image-obj-fh-dump-object-image-obj-fh"><span class="toc-number">1.4.0.1.</span> <span class="toc-text">分析[dump_object_image(obj, fh);](#dump_object_image(obj, fh);)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read-entire-file-filepath"><span class="toc-number">1.5.</span> <span class="toc-text">read_entire_file(filepath);</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read-all-asm-src-filepath"><span class="toc-number">1.6.</span> <span class="toc-text">read_all_asm(src, filepath);</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#init-source-src-filepath"><span class="toc-number">1.6.0.1.</span> <span class="toc-text">init_source(src, filepath);</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read-asm-param"><span class="toc-number">1.7.</span> <span class="toc-text">read_asm_param();</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read-asm-token"><span class="toc-number">1.8.</span> <span class="toc-text">read_asm_token();</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#assemble-code-code"><span class="toc-number">1.9.</span> <span class="toc-text">assemble_code(code);</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SymbolInfo-get-symbol-info-char-label"><span class="toc-number">1.10.</span> <span class="toc-text">SymbolInfo *get_symbol_info(char *label)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ObjectImage-assemble-code-detail-Vector-code-list"><span class="toc-number">1.11.</span> <span class="toc-text">ObjectImage *assemble_code_detail(Vector *code_list);</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dump-object-image-obj-fh"><span class="toc-number">1.12.</span> <span class="toc-text">dump_object_image(obj, fh);</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">1.13.</span> <span class="toc-text">数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Vector"><span class="toc-number">1.13.1.</span> <span class="toc-text">Vector</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#KeyValue"><span class="toc-number">1.13.2.</span> <span class="toc-text">KeyValue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Map"><span class="toc-number">1.13.3.</span> <span class="toc-text">Map</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StringBuilder"><span class="toc-number">1.13.4.</span> <span class="toc-text">StringBuilder</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Source"><span class="toc-number">1.13.5.</span> <span class="toc-text">Source</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Code"><span class="toc-number">1.13.6.</span> <span class="toc-text">Code</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ObjectImage"><span class="toc-number">1.13.7.</span> <span class="toc-text">ObjectImage</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">1.14.</span> <span class="toc-text"></span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/07/05/05task_struct/" title="Linux进程线程源码浅析">Linux进程线程源码浅析</a><time datetime="2023-07-05T12:34:46.888Z" title="Created 2023-07-05 20:34:46">2023-07-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/01/16/04Linux_fileSystem/" title="Linux文件系统技术内幕">Linux文件系统技术内幕</a><time datetime="2023-01-16T05:36:44.673Z" title="Created 2023-01-16 13:36:44">2023-01-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/01/13/03Linux_kernel_1/" title="Linux内核分析应用一 - 多进程共享内存内核驱动模块">Linux内核分析应用一 - 多进程共享内存内核驱动模块</a><time datetime="2023-01-13T14:18:40.830Z" title="Created 2023-01-13 22:18:40">2023-01-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/12/28/02malloc_1/" title="malloc内存管理浅析一 - 前奏">malloc内存管理浅析一 - 前奏</a><time datetime="2022-12-28T12:20:52.416Z" title="Created 2022-12-28 20:20:52">2022-12-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/12/05/01analy/" title="cctools源码分析">cctools源码分析</a><time datetime="2022-12-05T13:01:46.744Z" title="Created 2022-12-05 21:01:46">2022-12-05</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By sqq</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="/js/sky.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
