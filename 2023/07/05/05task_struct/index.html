@@ -21,7 +21,7 @@
 <meta property="og:image" content="https://s2.loli.net/2023/08/17/Rue9f8s3CaXwpY4.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/17/tApyiRqgTONhM6S.png">
 <meta property="article:published_time" content="2023-07-05T12:34:46.888Z">
-<meta property="article:modified_time" content="2023-08-18T04:38:08.083Z">
+<meta property="article:modified_time" content="2023-08-18T07:09:38.332Z">
 <meta property="article:author" content="sqq">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://s2.loli.net/2023/08/17/sgko9z2V5hdQqct.png">
@@ -80,6 +80,8 @@
        --><li><a href="/about/">About</a></li><!--
      --><!--
        --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/Operation_System/">Operation System</a></li><!--
      --><!--
        --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
      -->
@@ -355,7 +357,7 @@ size_t sas_ss_size;//信号处理程序的堆栈的地址
 <hr>
 <p>讲到这里，就有一个非常非常重要的结论了，我认为：线程是一个具体的概念，一个线程对应一个线程栈，也对应一个task_struct，一个进程可以包含一个或者多个线程。而进程实际上是一个抽象的概念，比如如果一个程序包含5个线程，那么这5个task_struct以及它们的资源组成的这么一个箱子的整体，那就是一个进程，<strong>而进程本身在Linux系统里并没有具体的结构体去描述它</strong>，因此我认为<strong>进程实际上就是一系列pid相同的线程的集合</strong>。换句话说，<strong>线程是一个物理上的具象（因为它由task_struct所描述），而进程是一个逻辑上的集合。</strong></p>
 <blockquote>
-<p><strong>进程实际上就是一系列pid相同的线程的集合。</strong></p>
+<p><strong>进程实际上就是一系列tgid相同的线程的集合。</strong></p>
 </blockquote>
 <p>此外，我们时常有听到主线程和子线程的概念，其实讲到这里我们就明白，从task_struct的角度看，所谓的主线程和子线程其实并没有任何主次之分，因为无论是在资源享有，线程调度等各个方面，所谓的主线程也都并没有比子线程 “高人一等”。可能唯一的一点特殊性就在于：所谓的主线程的pid等于整个进程的tgid吧（PS：这一点我其实不确定，待考究）。<strong>因此从内核这个意义上来看，我们可以抛弃主线程子线程这一概念，因为所有的线程都是平等的。</strong></p>
 <p>那么有同学可能会有疑问，在下面这个例子里，为什么main退出之后其他子线程也会退出，而某一子线程运行结束之后其他子线程以及main主线程不会退出呢，这难道不是意味着main主线程比三个子线程更牛吗？<img src="https://s2.loli.net/2023/08/17/tApyiRqgTONhM6S.png" alt="image.png"></p>
@@ -391,6 +393,8 @@ size_t sas_ss_size;//信号处理程序的堆栈的地址
           <li><a href="/about/">About</a></li>
         
           <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/Operation_System/">Operation System</a></li>
         
           <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
         
@@ -451,6 +455,8 @@ size_t sas_ss_size;//信号处理程序的堆栈的地址
        --><li><a href="/about/">About</a></li><!--
      --><!--
        --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/Operation_System/">Operation System</a></li><!--
      --><!--
        --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
      -->
