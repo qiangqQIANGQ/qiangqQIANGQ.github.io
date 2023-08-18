@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <meta name="description" content="main.c示例汇编文件.global syscall syscall:     mov %rdi, %rax     mov %rsi, %rdi     mov %rdx, %rsi     mov %rcx, %rdx     mov %r8, %rcx     mov %r9, %r8     mov 8(%rsp), %r9     syscall     ret  .global _s">
+    <meta name="description" content="main.c示例汇编文件1234567891011121314151617181920.global syscallsyscall:	mov %rdi, %rax	mov %rsi, %rdi	mov %rdx, %rsi	mov %rcx, %rdx	mov %r8, %rcx	mov %r9, %r8	mov 8(%rsp), %r9	syscall	ret.global _start_sta">
 <meta property="og:type" content="article">
 <meta property="og:title" content="cctools源码分析">
 <meta property="og:url" content="https://www.chaceq.love/2022/12/05/01analy/index.html">
 <meta property="og:site_name" content="chaceq.love">
-<meta property="og:description" content="main.c示例汇编文件.global syscall syscall:     mov %rdi, %rax     mov %rsi, %rdi     mov %rdx, %rsi     mov %rcx, %rdx     mov %r8, %rcx     mov %r9, %r8     mov 8(%rsp), %r9     syscall     ret  .global _s">
+<meta property="og:description" content="main.c示例汇编文件1234567891011121314151617181920.global syscallsyscall:	mov %rdi, %rax	mov %rsi, %rdi	mov %rdx, %rsi	mov %rcx, %rdx	mov %r8, %rcx	mov %r9, %r8	mov 8(%rsp), %r9	syscall	ret.global _start_sta">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="c:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116010431245.png">
 <meta property="og:image" content="c:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116011326465.png">
@@ -163,27 +163,8 @@
   
 
   <div class="content e-content" itemprop="articleBody">
-    <h1 id="main-c"><a href="#main-c" class="headerlink" title="main.c"></a>main.c</h1><h2 id="示例汇编文件"><a href="#示例汇编文件" class="headerlink" title="示例汇编文件"></a>示例汇编文件</h2><pre><code class="assembly">.global syscall
-syscall:
-    mov %rdi, %rax
-    mov %rsi, %rdi
-    mov %rdx, %rsi
-    mov %rcx, %rdx
-    mov %r8, %rcx
-    mov %r9, %r8
-    mov 8(%rsp), %r9
-    syscall
-    ret
+    <h1 id="main-c"><a href="#main-c" class="headerlink" title="main.c"></a>main.c</h1><h2 id="示例汇编文件"><a href="#示例汇编文件" class="headerlink" title="示例汇编文件"></a>示例汇编文件</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">.global syscall</span><br><span class="line">syscall:</span><br><span class="line">	mov %rdi, %rax</span><br><span class="line">	mov %rsi, %rdi</span><br><span class="line">	mov %rdx, %rsi</span><br><span class="line">	mov %rcx, %rdx</span><br><span class="line">	mov %r8, %rcx</span><br><span class="line">	mov %r9, %r8</span><br><span class="line">	mov 8(%rsp), %r9</span><br><span class="line">	syscall</span><br><span class="line">	ret</span><br><span class="line"></span><br><span class="line">.global _start</span><br><span class="line">_start:</span><br><span class="line">	mov (%rsp), %rdi</span><br><span class="line">	lea 8(%rsp), %rsi</span><br><span class="line">	call main</span><br><span class="line">	mov %rax, %rdi</span><br><span class="line">	mov $60, %eax</span><br><span class="line">	syscall</span><br></pre></td></tr></table></figure>
 
-.global _start
-_start:
-    mov (%rsp), %rdi
-    lea 8(%rsp), %rsi
-    call main
-    mov %rax, %rdi
-    mov $60, %eax
-    syscall
-</code></pre>
 <h2 id="函数一：read-asm-from-filepath-infile"><a href="#函数一：read-asm-from-filepath-infile" class="headerlink" title="函数一：read_asm_from_filepath(infile)"></a>函数一：read_asm_from_filepath(infile)</h2><blockquote>
 <p>负责从源文件中读取所有汇编代码，返回一个Vector类型的指针。</p>
 </blockquote>
@@ -197,73 +178,42 @@ _start:
 <p>这里返回的是一个Code_list链表，我们可以看到：这里的size其实就是汇编语句的条数。</p>
 <p>​																			<img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116011326465.png" alt="image-20221116011326465"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116012317434.png" alt="image-20221116012317434"></p>
 <p>并且，从下一个处理该 Vector *code的函数也可以看到有一个关键的循环：</p>
-<pre><code class="c">for (int i = 0; i &lt; vector_size(code_list); i++)&#123;&#125;
-//进入 vector_size(code_list)可以发现
-int vector_size(Vector *vec) &#123; return vec-&gt;size; &#125;
-实际上就是我们之前提到的 size,该文件里为19.与汇编源文件相符合。
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; vector_size(code_list); i++)&#123;&#125;</span><br><span class="line"><span class="comment">//进入 vector_size(code_list)可以发现</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">vector_size</span><span class="params">(Vector *vec)</span> &#123; <span class="keyword">return</span> vec-&gt;size; &#125;</span><br><span class="line">实际上就是我们之前提到的 size,该文件里为<span class="number">19.</span>与汇编源文件相符合。</span><br></pre></td></tr></table></figure>
 </blockquote>
 <h2 id="函数二：assemble-code-code"><a href="#函数二：assemble-code-code" class="headerlink" title="函数二：assemble_code(code);"></a>函数二：assemble_code(code);</h2><blockquote>
 <p>接收结构化之后的汇编代码链表。</p>
-<pre><code>ObjectImage *assemble_code(Vector *code) &#123; return assemble_code_detail(code); &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ObjectImage *assemble_code(Vector *code) &#123; return assemble_code_detail(code); &#125;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <h4 id="因此接下来分析-assemble-code-detail-Vector-code-list-ObjectImage-assemble-code-detail-Vector-code-list"><a href="#因此接下来分析-assemble-code-detail-Vector-code-list-ObjectImage-assemble-code-detail-Vector-code-list" class="headerlink" title="因此接下来分析[assemble_code_detail(Vector *code_list);](#ObjectImage *assemble_code_detail(Vector *code_list);)"></a>因此接下来分析[assemble_code_detail(Vector *code_list);](#ObjectImage *assemble_code_detail(Vector *code_list);)</h4><blockquote>
 <p>返回之后主函数使用ObjectImage *obj &#x3D; assemble_code(code);来接收其返回值。</p>
 </blockquote>
-<pre><code>struct ObjectImage &#123;
-    Vector *text;    // vector&lt;int&gt;
-    Vector *data;    // vector&lt;int&gt;
-    Vector *rela;    // vector&lt;RelaEntry *&gt;
-    Vector *strtab;  // vecotr&lt;int&gt;
-    Vector *symtab;  // vector&lt;SymbolInfo *&gt;
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct ObjectImage &#123;</span><br><span class="line">    Vector *text;    // vector&lt;int&gt;</span><br><span class="line">    Vector *data;    // vector&lt;int&gt;</span><br><span class="line">    Vector *rela;    // vector&lt;RelaEntry *&gt;</span><br><span class="line">    Vector *strtab;  // vecotr&lt;int&gt;</span><br><span class="line">    Vector *symtab;  // vector&lt;SymbolInfo *&gt;</span><br><span class="line"></span><br><span class="line">    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;</span><br><span class="line">    Map *label2offset;  // map&lt;char *, SectionOffset&gt;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
-    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;
-    Map *label2offset;  // map&lt;char *, SectionOffset&gt;
-&#125;;
-</code></pre>
 <blockquote>
 <p>从调试信息来看，该结构体实际上记录了各个段的具体信息，以下是具体调试信息：</p>
 <p>​								<img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109004948160.png" alt="image-20221109004948160"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109005027587.png" alt="image-20221109005027587"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109005053501.png" alt="image-20221109005053501"><img src="C:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109005127283.png" alt="image-20221109005127283"></p>
 </blockquote>
 <p>自此分析过程全部结束，下一步:</p>
-<pre><code>FILE *fh = fopen(outfile, &quot;wb&quot;);
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FILE *fh = fopen(outfile, &quot;wb&quot;);</span><br></pre></td></tr></table></figure>
+
 <p>说明该往目标文件写二进制数据了。</p>
 <h2 id="函数三：dump-object-image-obj-fh"><a href="#函数三：dump-object-image-obj-fh" class="headerlink" title="函数三：dump_object_image(obj, fh);"></a>函数三：dump_object_image(obj, fh);</h2><h4 id="分析-dump-object-image-obj-fh-dump-object-image-obj-fh"><a href="#分析-dump-object-image-obj-fh-dump-object-image-obj-fh" class="headerlink" title="分析[dump_object_image(obj, fh);](#dump_object_image(obj, fh);)"></a>分析[dump_object_image(obj, fh);](#dump_object_image(obj, fh);)</h4><h2 id="read-entire-file-filepath"><a href="#read-entire-file-filepath" class="headerlink" title="read_entire_file(filepath);"></a>read_entire_file(filepath);</h2><blockquote>
 <p> 读入文件的主要函数.</p>
 </blockquote>
-<pre><code>while ((ch = fgetc(fh)) != EOF) string_builder_append(sb, ch);
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">while ((ch = fgetc(fh)) != EOF) string_builder_append(sb, ch);</span><br></pre></td></tr></table></figure>
+
 <p>以上这一句是分析每一个char的语句。</p>
-<pre><code>int fgetc(FILE *stream)
-&#123;
-    char buf[1];
-    int res = read(stream-&gt;fd, buf, 1);
-    if (res &lt;= 0) return EOF;
-    return buf[0] &amp; 0xff;
-&#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int fgetc(FILE *stream)</span><br><span class="line">&#123;</span><br><span class="line">    char buf[1];</span><br><span class="line">    int res = read(stream-&gt;fd, buf, 1);</span><br><span class="line">    if (res &lt;= 0) return EOF;</span><br><span class="line">    return buf[0] &amp; 0xff;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>在fgetc函数里面，通过read函数读入每一个字符，返回给buf[0]，然后取第八位传给while循环。</p>
 <p>然后进入string_builder_append(sb, ch); 函数。</p>
-<pre><code>char string_builder_append(StringBuilder *sb, char ch)
-&#123;
-    vector_push_back(sb-&gt;data, (void *)ch);
-    return ch;
-&#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">char string_builder_append(StringBuilder *sb, char ch)</span><br><span class="line">&#123;</span><br><span class="line">    vector_push_back(sb-&gt;data, (void *)ch);</span><br><span class="line">    return ch;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>该函数主要操主调函数传下来的 StringBuilder *sb。</p>
 <p>其中 sb-&gt;data里的size表示字符数。</p>
 <p>返回 string_builder_get(sb); 该函数。</p>
-<pre><code>char *string_builder_get(StringBuilder *sb)
-&#123;
-    int size = vector_size(sb-&gt;data);
-    char *ret = safe_malloc(size + 1);
-    for (int i = 0; i &lt; size; i++) ret[i] = (char)vector_get(sb-&gt;data, i);
-    ret[size] = &#39;\0&#39;;
-    return ret;
-&#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">char *string_builder_get(StringBuilder *sb)</span><br><span class="line">&#123;</span><br><span class="line">    int size = vector_size(sb-&gt;data);</span><br><span class="line">    char *ret = safe_malloc(size + 1);</span><br><span class="line">    for (int i = 0; i &lt; size; i++) ret[i] = (char)vector_get(sb-&gt;data, i);</span><br><span class="line">    ret[size] = &#x27;\0&#x27;;</span><br><span class="line">    return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>该函数将采集到的所有字符放入 char ret[]数组中并返回主调函数。 </p>
 <p>然后fclose源 .s文件</p>
 <p>最后，该函数向上层主调函数返回了 char ret[]数组。</p>
@@ -274,20 +224,11 @@ int vector_size(Vector *vec) &#123; return vec-&gt;size; &#125;
 <p>传入参数：char ret[]数组，原汇编文件。返回Vector</p>
 </blockquote>
 <h4 id="init-source-src-filepath"><a href="#init-source-src-filepath" class="headerlink" title="init_source(src, filepath);"></a>init_source(src, filepath);</h4><p>该函数首先分析了文件路径 .&#x2F;system.s 存在一个 Source source; 结构体中（这是一个全局结构体）。</p>
-<pre><code>typedef struct &#123;
-    int line, column;
-    Vector *line2length;
-    char *src;// ==汇编代码==
-    // example: &quot;/tmp/1.c&quot; -&gt; cwd: &quot;/tmp/&quot;
-    char *cwd;  // current working directory with &#39;/&#39;
-    char *filepath;
-&#125; Source;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    int line, column;</span><br><span class="line">    Vector *line2length;</span><br><span class="line">    char *src;// ==汇编代码==</span><br><span class="line">    // example: &quot;/tmp/1.c&quot; -&gt; cwd: &quot;/tmp/&quot;</span><br><span class="line">    char *cwd;  // current working directory with &#x27;/&#x27;</span><br><span class="line">    char *filepath;</span><br><span class="line">&#125; Source;</span><br></pre></td></tr></table></figure>
+
 <p>接下来是一个大循环，每一个循环分析一个汇编语句，比如第一个循环是 .global，再比如 mov %rdi, %rax。</p>
-<pre><code>while (speekch() != &#39;\0&#39;) &#123;
-...
-&#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">while (speekch() != &#x27;\0&#x27;) &#123;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ol>
 <li><p>循环的第一部分是去掉类似注释的东西。</p>
 </li>
@@ -308,37 +249,15 @@ map_insert(unary_table, &quot;push&quot;, (void *)INST_PUSH);
 map_insert(unary_table, &quot;pop&quot;, (void *)INST_POP);
 map_insert(unary_table, &quot;idiv&quot;, (void *)INST_IDIV);
         ...
-</code></pre>
-</li>
-<li><p>一旦查到了就进入处理的部分！</p>
-</li>
-</ol>
-<p>接下来分析一下详细处理的部分。</p>
-<pre><code>if (kv = map_lookup(binop_table, str)) &#123;
-            Code *lhs = read_asm_param();
-            sexpect_ch(&#39;,&#39;);
-            Code *rhs = read_asm_param();
-            vector_push_back(code, new_binop_code((int)kv_value(kv), lhs, rhs));
-            continue;
-        &#125;
-</code></pre>
-<ol>
-<li><p>先后两个 <a href="#read_asm_param()">read_asm_param()</a>分别分析左右操作数。</p>
-</li>
-<li><p>接着用 vector_push_back(code, new_binop_code((int)kv_value(kv), lhs, rhs));将其整合到一起。即将信息填充给第一个参数 code。我们从void vector_push_back(Vector *vec, void *item)的源码就可以看到填充过程。</p>
-</li>
-<li><pre><code>void vector_push_back(Vector *vec, void *item)
-&#123;
-    if (vec-&gt;data == NULL || vec-&gt;size == vec-&gt;rsved_size) &#123;
-        vec-&gt;rsved_size *= 2;
-        void **ndata = (void **)safe_malloc(sizeof(void *) * vec-&gt;rsved_size);
-        memcpy(ndata, vec-&gt;data, vec-&gt;size * sizeof(void *));
-        vec-&gt;data = ndata;
-    &#125;
-
-    vec-&gt;data[vec-&gt;size++] = item;
-&#125;
-//这里的 vec参数就是传进来的code的地址.
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">6. 一旦查到了就进入处理的部分！</span><br><span class="line"></span><br><span class="line">接下来分析一下详细处理的部分。</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+if (kv = map_lookup(binop_table, str)) &#123;
+         Code *lhs = read_asm_param();
+         sexpect_ch(&#39;,&#39;);
+         Code *rhs = read_asm_param();
+         vector_push_back(code, new_binop_code((int)kv_value(kv), lhs, rhs));
+         continue;
+     &#125;
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">1. 先后两个 [read_asm_param()](#read_asm_param())分别分析左右操作数。</span><br><span class="line"></span><br><span class="line">2. 接着用 vector_push_back(code, new_binop_code((int)kv_value(kv), lhs, rhs));将其整合到一起。即将信息填充给第一个参数 code。我们从void vector_push_back(Vector *vec, void *item)的源码就可以看到填充过程。</span><br><span class="line"></span><br><span class="line">3. ```</span><br><span class="line">   void vector_push_back(Vector *vec, void *item)</span><br><span class="line">   &#123;</span><br><span class="line">       if (vec-&gt;data == NULL || vec-&gt;size == vec-&gt;rsved_size) &#123;</span><br><span class="line">           vec-&gt;rsved_size *= 2;</span><br><span class="line">           void **ndata = (void **)safe_malloc(sizeof(void *) * vec-&gt;rsved_size);</span><br><span class="line">           memcpy(ndata, vec-&gt;data, vec-&gt;size * sizeof(void *));</span><br><span class="line">           vec-&gt;data = ndata;</span><br><span class="line">       &#125;</span><br><span class="line">   </span><br><span class="line">       vec-&gt;data[vec-&gt;size++] = item;</span><br><span class="line">   &#125;</span><br><span class="line">   //这里的 vec参数就是传进来的code的地址.</span><br></pre></td></tr></table></figure>
 </code></pre>
 </li>
 <li><p>continue;返回继续循环。</p>
@@ -351,82 +270,39 @@ map_insert(unary_table, &quot;idiv&quot;, (void *)INST_IDIV);
 <h2 id="read-asm-param"><a href="#read-asm-param" class="headerlink" title="read_asm_param();"></a>read_asm_param();</h2><blockquote>
 <p>该函数总结来说就是分析一个汇编语句的其中一个操作数的内容。&#x3D;&#x3D;例如：mov %rax, %rdi&#x3D;&#x3D;的 %rax。</p>
 </blockquote>
-<pre><code>switch (ch) &#123;
-        case &#39;%&#39;:
-            return str2reg(read_asm_token());
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">switch (ch) &#123;</span><br><span class="line">        case &#x27;%&#x27;:</span><br><span class="line">            return str2reg(read_asm_token());</span><br><span class="line"></span><br><span class="line">        case &#x27;$&#x27;: &#123;</span><br><span class="line">            getch();  // already skipped space</span><br><span class="line">            return new_value_code(read_asm_ival());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        case &#x27;(&#x27;:</span><br><span class="line">            return new_addrof_code(read_asm_memory(), 0);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-        case &#39;$&#39;: &#123;
-            getch();  // already skipped space
-            return new_value_code(read_asm_ival());
-        &#125;
-
-        case &#39;(&#39;:
-            return new_addrof_code(read_asm_memory(), 0);
-    &#125;
-</code></pre>
 <p>拿第一句来分析 ‘%’代表后面有寄存器。</p>
 <p>​	read_asm_token()函数：返回一个寄存器，例如 %rax，返回给str2reg(char *src);</p>
 <p>​	str2reg(char *src);里又是一系列哈希表打入操作，将寄存器们打入到Map,以下画风:</p>
-<pre><code>Map *map = new_map();
-    map_insert(map, &quot;%al&quot;, nbyte_reg(1, 0));
-    map_insert(map, &quot;%dil&quot;, nbyte_reg(1, 1));
-    map_insert(map, &quot;%sil&quot;, nbyte_reg(1, 2));
-    map_insert(map, &quot;%dl&quot;, nbyte_reg(1, 3));
-    map_insert(map, &quot;%cl&quot;, nbyte_reg(1, 4));
-    //其中nbyte_reg(1, 4))是Code类型的.
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Map *map = new_map();</span><br><span class="line">	map_insert(map, &quot;%al&quot;, nbyte_reg(1, 0));</span><br><span class="line">	map_insert(map, &quot;%dil&quot;, nbyte_reg(1, 1));</span><br><span class="line">    map_insert(map, &quot;%sil&quot;, nbyte_reg(1, 2));</span><br><span class="line">    map_insert(map, &quot;%dl&quot;, nbyte_reg(1, 3));</span><br><span class="line">    map_insert(map, &quot;%cl&quot;, nbyte_reg(1, 4));</span><br><span class="line">    //其中nbyte_reg(1, 4))是Code类型的.</span><br></pre></td></tr></table></figure>
+
 <p>​	看看这个函数的返回值</p>
-<pre><code>return new_addrof_label_code(read_asm_memory(), label);
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">return new_addrof_label_code(read_asm_memory(), label);</span><br></pre></td></tr></table></figure>
+
 <p>而这个new_addrof_label_code函数返回的是Code*类型，因此就不难分析该函数最终完成了什么事情了。</p>
 <blockquote>
 <p>总结，该函数将指令的一个操作数存进了一个Code对象中并返回其地址。对了，Code对象定义如下:</p>
-<pre><code>typedef struct Code Code;
-struct Code &#123;
-    int kind;
-
-    Code *lhs, *rhs;
-    int ival;
-    char *sval;  // size is ival
-    char *label;
-    Vector *read_dep;
-    int can_be_eliminated;
-&#125;;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">typedef struct Code Code;</span><br><span class="line">struct Code &#123;</span><br><span class="line">    int kind;</span><br><span class="line"></span><br><span class="line">    Code *lhs, *rhs;</span><br><span class="line">    int ival;</span><br><span class="line">    char *sval;  // size is ival</span><br><span class="line">    char *label;</span><br><span class="line">    Vector *read_dep;</span><br><span class="line">    int can_be_eliminated;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>​	</p>
 <h2 id="read-asm-token"><a href="#read-asm-token" class="headerlink" title="read_asm_token();"></a>read_asm_token();</h2><p>首先建立一个 StringBuilder *sb &#x3D; new_string_builder();结构体</p>
 <p>然后调用 string_builder_append(sb, sgetch());这个函数是分析每一个字符的。</p>
 <p>后面有个循环就是分析每一个字符。</p>
-<pre><code>while (1) &#123;
-        int ch = peekch();
-        if (!isalnum(ch) &amp;&amp; ch != &#39;_&#39; &amp;&amp; ch != &#39;.&#39; &amp;&amp; ch != &#39;:&#39;) break;
-        string_builder_append(sb, getch());
-    &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">while (1) &#123;</span><br><span class="line">        int ch = peekch();</span><br><span class="line">        if (!isalnum(ch) &amp;&amp; ch != &#x27;_&#x27; &amp;&amp; ch != &#x27;.&#x27; &amp;&amp; ch != &#x27;:&#x27;) break;</span><br><span class="line">        string_builder_append(sb, getch());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>&#x3D;&#x3D;最后返回一个词语，比如 .global&#x3D;&#x3D;</p>
 </blockquote>
 <h2 id="assemble-code-code"><a href="#assemble-code-code" class="headerlink" title="assemble_code(code);"></a>assemble_code(code);</h2><h2 id="SymbolInfo-get-symbol-info-char-label"><a href="#SymbolInfo-get-symbol-info-char-label" class="headerlink" title="SymbolInfo *get_symbol_info(char *label)"></a>SymbolInfo *get_symbol_info(char *label)</h2><p>传进来的其实是标号 ，返回类型 SymbolInfo * 。</p>
-<pre><code>typedef struct &#123;
-    int index;
-    char *label;
-    int st_name;
-    int st_info;
-&#125; SymbolInfo;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    int index;</span><br><span class="line">    char *label;</span><br><span class="line">    int st_name;</span><br><span class="line">    int st_info;</span><br><span class="line">&#125; SymbolInfo;</span><br></pre></td></tr></table></figure>
+
 <p>接下来定义了一个 SymbolInfo *symbol 并进行了赋值。</p>
-<pre><code>SymbolInfo *symbol = (SymbolInfo *)safe_malloc(sizeof(SymbolInfo));
-    symbol-&gt;index = vector_size(target_objimg-&gt;symtab) + 4;
-    symbol-&gt;label = label;
-    symbol-&gt;st_name = vector_size(target_objimg-&gt;strtab);
-    symbol-&gt;st_info = 0;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SymbolInfo *symbol = (SymbolInfo *)safe_malloc(sizeof(SymbolInfo));</span><br><span class="line">    symbol-&gt;index = vector_size(target_objimg-&gt;symtab) + 4;</span><br><span class="line">    symbol-&gt;label = label;</span><br><span class="line">    symbol-&gt;st_name = vector_size(target_objimg-&gt;strtab);</span><br><span class="line">    symbol-&gt;st_info = 0;</span><br></pre></td></tr></table></figure>
+
 <p>最后的三个函数，暂时没法分析，哈哈。</p>
-<pre><code>add_string(target_objimg-&gt;strtab, label, strlen(label) + 1);
-map_insert(target_objimg-&gt;symbol_map, label, symbol);
-vector_push_back(target_objimg-&gt;symtab, symbol);
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">add_string(target_objimg-&gt;strtab, label, strlen(label) + 1);</span><br><span class="line">map_insert(target_objimg-&gt;symbol_map, label, symbol);</span><br><span class="line">vector_push_back(target_objimg-&gt;symtab, symbol);</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>行，返回上面那个SymbolInfo *symbol ，完事。</p>
 </blockquote>
@@ -436,28 +312,11 @@ vector_push_back(target_objimg-&gt;symtab, symbol);
 <p>该函数有一个很重要的局部变量就是ObjectImage *objimg</p>
 <blockquote>
 <p>第一句就有ObjectImage *objimg &#x3D; (ObjectImage *)safe_malloc(sizeof(ObjectImage));</p>
-<pre><code>struct ObjectImage &#123;
-    Vector *text;    // vector&lt;int&gt;
-    Vector *data;    // vector&lt;int&gt;
-    Vector *rela;    // vector&lt;RelaEntry *&gt;
-    Vector *strtab;  // vecotr&lt;int&gt;
-    Vector *symtab;  // vector&lt;SymbolInfo *&gt;
-
-    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;
-    Map *label2offset;  // map&lt;char *, SectionOffset&gt;
-&#125;;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct ObjectImage &#123;</span><br><span class="line">    Vector *text;    // vector&lt;int&gt;</span><br><span class="line">    Vector *data;    // vector&lt;int&gt;</span><br><span class="line">    Vector *rela;    // vector&lt;RelaEntry *&gt;</span><br><span class="line">    Vector *strtab;  // vecotr&lt;int&gt;</span><br><span class="line">    Vector *symtab;  // vector&lt;SymbolInfo *&gt;</span><br><span class="line"></span><br><span class="line">    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;</span><br><span class="line">    Map *label2offset;  // map&lt;char *, SectionOffset&gt;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>接下来便是给objimg的每一个成员malloc内存。</p>
-<pre><code>    objimg-&gt;text = new_vector();
-    objimg-&gt;data = new_vector();
-    objimg-&gt;rela = new_vector();
-    objimg-&gt;strtab = new_vector();
-    vector_push_back(objimg-&gt;strtab, 0x00);
-    objimg-&gt;symtab = new_vector();
-    objimg-&gt;symbol_map = new_map();
-    objimg-&gt;label2offset = new_map();
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">objimg-&gt;text = new_vector();</span><br><span class="line">objimg-&gt;data = new_vector();</span><br><span class="line">objimg-&gt;rela = new_vector();</span><br><span class="line">objimg-&gt;strtab = new_vector();</span><br><span class="line">vector_push_back(objimg-&gt;strtab, 0x00);</span><br><span class="line">objimg-&gt;symtab = new_vector();</span><br><span class="line">objimg-&gt;symbol_map = new_map();</span><br><span class="line">objimg-&gt;label2offset = new_map();</span><br></pre></td></tr></table></figure>
+
 <p>接下来的init_target_objimg(objimg);很简单，就是造一个全局对象 ObjectImage * target_objimg，然后把上面的赋过去。set_current_section(TEXT_SECTION);同样设置一个全局current_section并得到赋值。</p>
 <blockquote>
 <p>在这里请务必注意有全局和局部两个 objimg。</p>
@@ -473,38 +332,21 @@ vector_push_back(target_objimg-&gt;symtab, symbol);
 </li>
 <li><p>接下来 switch (code-&gt;kind)。</p>
 <p>比如第一句是 .global 跳转到836行</p>
-<pre><code>case CD_GLOBAL:
-                get_symbol_info(code-&gt;label)-&gt;st_info |= 0x10;
-                break;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">case CD_GLOBAL:</span><br><span class="line">                get_symbol_info(code-&gt;label)-&gt;st_info |= 0x10;</span><br><span class="line">                break;</span><br></pre></td></tr></table></figure>
+
 <p>浅浅分析一下下面的函数 [get_symbol_info(code-&gt;label)](#SymbolInfo *get_symbol_info(char *label))。</p>
 <p>上面那个真难分析，咱们来分析一个mov语句看看。</p>
-<pre><code>case INST_MOV:
-    if (is_reg64(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs)) &#123;
-                    emit_byte(rex_prefix_reg_ext(1, code-&gt;lhs, code-&gt;rhs));
-                    emit_byte(0x89);
-                    emit_byte(
-                        modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));
-                    break;
-                &#125;
-   ...
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">case INST_MOV:</span><br><span class="line">	if (is_reg64(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs)) &#123;</span><br><span class="line">                    emit_byte(rex_prefix_reg_ext(1, code-&gt;lhs, code-&gt;rhs));</span><br><span class="line">                    emit_byte(0x89);</span><br><span class="line">                    emit_byte(</span><br><span class="line">                        modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));</span><br><span class="line">                    break;</span><br><span class="line">                &#125;</span><br><span class="line">   ...</span><br></pre></td></tr></table></figure>
+
 <p>首先case里面的很多if语句，其实是分析mov语句的操作数类型的，如下面:</p>
-<pre><code>if (is_reg64(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs))&#123;&#125;
-if (is_reg32(code-&gt;lhs) &amp;&amp; is_reg32(code-&gt;rhs))&#123;&#125;
-if (is_imm(code-&gt;lhs) &amp;&amp; is_reg32(code-&gt;rhs))&#123;&#125;
-if (is_addrof(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs))&#123;&#125;
-if (is_reg8(code-&gt;lhs) &amp;&amp; is_addrof(code-&gt;rhs))&#123;&#125;
-...
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if (is_reg64(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs))&#123;&#125;</span><br><span class="line">if (is_reg32(code-&gt;lhs) &amp;&amp; is_reg32(code-&gt;rhs))&#123;&#125;</span><br><span class="line">if (is_imm(code-&gt;lhs) &amp;&amp; is_reg32(code-&gt;rhs))&#123;&#125;</span><br><span class="line">if (is_addrof(code-&gt;lhs) &amp;&amp; is_reg64(code-&gt;rhs))&#123;&#125;</span><br><span class="line">if (is_reg8(code-&gt;lhs) &amp;&amp; is_addrof(code-&gt;rhs))&#123;&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
 <p>例如第一句 mov %rdi, %rax 显然应该进入第一个if语句。</p>
 <p>if里面实际上是三个emit_byte函数，这里面实际上是另一个函数add_byte。</p>
-<pre><code>emit_byte(rex_prefix_reg_ext(1, code-&gt;lhs, code-&gt;rhs));
-emit_byte(0x89);
-emit_byte(modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));
-</code></pre>
-<pre><code>void emit_byte(int val0) &#123; add_byte(buffer_to_emit, val0); &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">emit_byte(rex_prefix_reg_ext(1, code-&gt;lhs, code-&gt;rhs));</span><br><span class="line">emit_byte(0x89);</span><br><span class="line">emit_byte(modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void emit_byte(int val0) &#123; add_byte(buffer_to_emit, val0); &#125;</span><br></pre></td></tr></table></figure>
+
 <p>这里的buffer_to_emit是一个全局的结构体，有定义过：Vector *buffer_to_emit &#x3D; NULL;</p>
 <p>讲道理，这里没那么好分析，因为主要都是涉及到数字的位运算。</p>
 <blockquote>
@@ -513,12 +355,8 @@ emit_byte(modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));
 </li>
 </ol>
 <p>接下来的一个 for 循环时涉及到 symtab 节的。</p>
-<pre><code>for (int i = 0; i &lt; vector_size(target_objimg-&gt;symtab); i++) &#123;
-        SymbolInfo *sym = (SymbolInfo *)vector_get(target_objimg-&gt;symtab, i);
-        if (map_lookup(target_objimg-&gt;label2offset, sym-&gt;label) == NULL)
-            sym-&gt;st_info |= 0x10;
-    &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for (int i = 0; i &lt; vector_size(target_objimg-&gt;symtab); i++) &#123;</span><br><span class="line">        SymbolInfo *sym = (SymbolInfo *)vector_get(target_objimg-&gt;symtab, i);</span><br><span class="line">        if (map_lookup(target_objimg-&gt;label2offset, sym-&gt;label) == NULL)</span><br><span class="line">            sym-&gt;st_info |= 0x10;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
 <p>再接下来分析那个 objimg-&gt;rela。</p>
 <p>最后 set_current_section(TEXT_SECTION);以及分析label_placeholders。注释很关键：&#x2F;&#x2F; write offset to label placeholders。</p>
 <blockquote>
@@ -530,62 +368,26 @@ emit_byte(modrm(3, reg_field(code-&gt;lhs), reg_field(code-&gt;rhs)));
 <p>第一个函数 init_target_objimg(objimg);同样为了初始化 ObjectImage *target_objimg &#x3D; objimg;的全局对象。</p>
 <p>第二个函数 set_buffer_to_emit(dumped);同样为了初始化 Vector *buffer_to_emit &#x3D; buffer; 的全局对象。</p>
 <h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><h3 id="Vector"><a href="#Vector" class="headerlink" title="Vector"></a>Vector</h3><p>该项目均采用vector数据结构</p>
-<pre><code class="c">struct Vector &#123;
-    int size, rsved_size;
-    void **data;
-&#125;;
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Vector</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> size, rsved_size;</span><br><span class="line">    <span class="type">void</span> **data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
 <h3 id="KeyValue"><a href="#KeyValue" class="headerlink" title="KeyValue"></a>KeyValue</h3><p>key存字符串</p>
 <p>value存对应的值，用于匹配查询</p>
-<pre><code class="c">struct KeyValue &#123;
-    const char *key;
-    void *value;
-&#125;;
-</code></pre>
-<h3 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h3><pre><code class="c">struct Map &#123;
-    Vector *data;
-&#125;;
-</code></pre>
-<h3 id="StringBuilder"><a href="#StringBuilder" class="headerlink" title="StringBuilder"></a>StringBuilder</h3><pre><code class="c">struct StringBuilder &#123;
-    Vector *data;
-&#125;;
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">KeyValue</span> &#123;</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *key;</span><br><span class="line">    <span class="type">void</span> *value;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Map</span> &#123;</span></span><br><span class="line">    Vector *data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="StringBuilder"><a href="#StringBuilder" class="headerlink" title="StringBuilder"></a>StringBuilder</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">StringBuilder</span> &#123;</span></span><br><span class="line">    Vector *data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
 <h3 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h3><p>src用于存储输入的汇编文件</p>
 <p>line和cloumn表示正在处理的行列</p>
-<pre><code class="c">typedef struct &#123;
-    int line, column;
-    Vector *line2length;
-    char *src;
-    // example: &quot;/tmp/1.c&quot; -&gt; cwd: &quot;/tmp/&quot;
-    char *cwd;  // current working directory with &#39;/&#39;
-    char *filepath;
-&#125; Source;
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> line, column;</span><br><span class="line">    Vector *line2length;</span><br><span class="line">    <span class="type">char</span> *src;</span><br><span class="line">    <span class="comment">// example: &quot;/tmp/1.c&quot; -&gt; cwd: &quot;/tmp/&quot;</span></span><br><span class="line">    <span class="type">char</span> *cwd;  <span class="comment">// current working directory with &#x27;/&#x27;</span></span><br><span class="line">    <span class="type">char</span> *filepath;</span><br><span class="line">&#125; Source;</span><br></pre></td></tr></table></figure>
+
 <h3 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h3><p>用于存储汇编指令</p>
 <p>lhs表示左操作数，rhs表示右操作数</p>
-<pre><code class="c">typedef struct Code Code;
-struct Code &#123;
-    int kind;
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Code</span> <span class="title">Code</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Code</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> kind;</span><br><span class="line"></span><br><span class="line">    Code *lhs, *rhs;</span><br><span class="line">    <span class="type">int</span> ival;</span><br><span class="line">    <span class="type">char</span> *sval;  <span class="comment">// size is ival</span></span><br><span class="line">    <span class="type">char</span> *label;</span><br><span class="line">    Vector *read_dep;</span><br><span class="line">    <span class="type">int</span> can_be_eliminated;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
-    Code *lhs, *rhs;
-    int ival;
-    char *sval;  // size is ival
-    char *label;
-    Vector *read_dep;
-    int can_be_eliminated;
-&#125;;
-</code></pre>
-<h3 id="ObjectImage"><a href="#ObjectImage" class="headerlink" title="ObjectImage"></a>ObjectImage</h3><pre><code class="c">struct ObjectImage &#123;
-    Vector *text;    // vector&lt;int&gt;
-    Vector *data;    // vector&lt;int&gt;
-    Vector *rela;    // vector&lt;RelaEntry *&gt;
-    Vector *strtab;  // vecotr&lt;int&gt;
-    Vector *symtab;  // vector&lt;SymbolInfo *&gt;
+<h3 id="ObjectImage"><a href="#ObjectImage" class="headerlink" title="ObjectImage"></a>ObjectImage</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ObjectImage</span> &#123;</span></span><br><span class="line">    Vector *text;    <span class="comment">// vector&lt;int&gt;</span></span><br><span class="line">    Vector *data;    <span class="comment">// vector&lt;int&gt;</span></span><br><span class="line">    Vector *rela;    <span class="comment">// vector&lt;RelaEntry *&gt;</span></span><br><span class="line">    Vector *strtab;  <span class="comment">// vecotr&lt;int&gt;</span></span><br><span class="line">    Vector *symtab;  <span class="comment">// vector&lt;SymbolInfo *&gt;</span></span><br><span class="line"></span><br><span class="line">    Map *symbol_map;    <span class="comment">// map&lt;char *, SymbolInfo *&gt;</span></span><br><span class="line">    Map *label2offset;  <span class="comment">// map&lt;char *, SectionOffset&gt;</span></span><br><span class="line">&#125;;	</span><br></pre></td></tr></table></figure>
 
-    Map *symbol_map;    // map&lt;char *, SymbolInfo *&gt;
-    Map *label2offset;  // map&lt;char *, SectionOffset&gt;
-&#125;;	
-</code></pre>
 <h2 id=""><a href="#" class="headerlink" title=""></a></h2>
   </div>
 </article>

@@ -176,15 +176,10 @@
 <p><strong>线程的实际线程号其实是 pid ，因此 pid 与线程是一一对应的关系</strong>，而一个线程组中所有的子线程和其主线程有相同的 tgid，而这个 tgid 也就是主线程（领头线程）的 pid。打个比方，在前面的例子里，可能t0，t1，t2，t3的tgid都是1000，而他们的pid分别是1000，1001，1002，1003。换句话说，tgid是从<strong>进程</strong>的视角来描述的，因为这四个线程统一存在于一个进程中，进程号便是1000；而pid则是从单个<strong>线程</strong>的角度来描述的，每一个pid也就对应内核中的一个具体的task_struct结构体，这也是调度的基本单位。</p>
 <p><img src="https://s2.loli.net/2023/08/17/sgko9z2V5hdQqct.png" alt="image.png"></p>
 <p>值得注意的是，我们通常所熟悉的 getpid() 系统调用返回的是其实是当前进程的 tgid 而不是pid值！也就是返回的其实是它的主线程的 pid。如果你需要获取该线程真正自己的 tgid，那么请使用 gettid() 方法！</p>
-<pre><code class="c">pid_t pid;//进程的唯一标识
-pid_t tgid;// 线程组的主线程的pid成员的值
-</code></pre>
-<h4 id="2）进程间的亲属关系"><a href="#2）进程间的亲属关系" class="headerlink" title="2）进程间的亲属关系"></a><strong>2）进程间的亲属关系</strong></h4><pre><code class="c">struct task_struct *real_parent; /* real parent process */
-struct task_struct *parent; /* recipient of SIGCHLD, wait4() reports */
-struct list_head children;    /* list of my children */
-struct list_head sibling;    /* linkage in my parent&#39;s children list */
-struct task_struct *group_leader;    /* threadgroup leader */
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">pid_t</span> pid;<span class="comment">//进程的唯一标识</span></span><br><span class="line"><span class="type">pid_t</span> tgid;<span class="comment">// 线程组的主线程的pid成员的值</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2）进程间的亲属关系"><a href="#2）进程间的亲属关系" class="headerlink" title="2）进程间的亲属关系"></a><strong>2）进程间的亲属关系</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">real_parent</span>;</span> <span class="comment">/* real parent process */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">parent</span>;</span> <span class="comment">/* recipient of SIGCHLD, wait4() reports */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">children</span>;</span>    <span class="comment">/* list of my children */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">sibling</span>;</span>    <span class="comment">/* linkage in my parent&#x27;s children list */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">group_leader</span>;</span>    <span class="comment">/* threadgroup leader */</span></span><br></pre></td></tr></table></figure>
+
 <p>在Linux系统中，所有进程之间都有着直接或间接地联系，每个进程都有其父进程（除了idle 0号进程），也可能有零个或多个子进程。拥有同一父进程的所有进程具有兄弟关系。</p>
 <ul>
 <li><p>real_parent 指向其父进程，如果创建它的父进程不再存在，则指向PID为1的init进程。</p>
@@ -208,96 +203,34 @@ struct task_struct *group_leader;    /* threadgroup leader */
 </blockquote>
 <p><img src="https://s2.loli.net/2023/08/17/cCZumioGW864ALj.png" alt="image.png"></p>
 <h4 id="3）进程的状态"><a href="#3）进程的状态" class="headerlink" title="**3）进程的状态 **"></a>**3）进程的状态 **</h4><p>状态state通过设置比特位的方式来赋值，来表示进程的状态，它们在进程调度中有着很关键的作用，state的可能取值为以下一些宏：</p>
-<pre><code class="c">volatile long state；
-#define TASK_RUNNING        0//进程要么正在执行，要么准备执行
-#define TASK_INTERRUPTIBLE  1 //可中断的睡眠，可以通过一个信号唤醒
-#define TASK_UNINTERRUPTIBLE    2 //不可中断睡眠，不可以通过信号进行唤醒
-#define __TASK_STOPPED      4 //进程停止执行
-#define __TASK_TRACED       8 //进程被追踪
-/* in tsk-&gt;exit_state */ 
-#define EXIT_ZOMBIE     16 //僵尸状态的进程，表示进程被终止，但是父进程还没有获取它的终止信息，比如进程有没有执行完等信息。                     
-#define EXIT_DEAD       32 //进程的最终状态，进程死亡
-/* in tsk-&gt;state again */ 
-#define TASK_DEAD       64 //死亡
-#define TASK_WAKEKILL       128 //唤醒并杀死的进程
-#define TASK_WAKING     256 //唤醒进程
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="type">long</span> state；</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_RUNNING        0<span class="comment">//进程要么正在执行，要么准备执行</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_INTERRUPTIBLE  1 <span class="comment">//可中断的睡眠，可以通过一个信号唤醒</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_UNINTERRUPTIBLE    2 <span class="comment">//不可中断睡眠，不可以通过信号进行唤醒</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __TASK_STOPPED      4 <span class="comment">//进程停止执行</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __TASK_TRACED       8 <span class="comment">//进程被追踪</span></span></span><br><span class="line"><span class="comment">/* in tsk-&gt;exit_state */</span> </span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EXIT_ZOMBIE     16 <span class="comment">//僵尸状态的进程，表示进程被终止，但是父进程还没有获取它的终止信息，比如进程有没有执行完等信息。                     </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EXIT_DEAD       32 <span class="comment">//进程的最终状态，进程死亡</span></span></span><br><span class="line"><span class="comment">/* in tsk-&gt;state again */</span> </span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_DEAD       64 <span class="comment">//死亡</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_WAKEKILL       128 <span class="comment">//唤醒并杀死的进程</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_WAKING     256 <span class="comment">//唤醒进程</span></span></span><br></pre></td></tr></table></figure>
+
 <p><img src="https://s2.loli.net/2023/08/17/4IzuoQxqb3MpTGw.png" alt="image.png"></p>
-<h4 id="4）进程内核栈"><a href="#4）进程内核栈" class="headerlink" title="4）进程内核栈"></a><strong>4）进程内核栈</strong></h4><pre><code class="c">void *stack;
-</code></pre>
+<h4 id="4）进程内核栈"><a href="#4）进程内核栈" class="headerlink" title="4）进程内核栈"></a><strong>4）进程内核栈</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="built_in">stack</span>;</span><br></pre></td></tr></table></figure>
+
 <p>进程在内核态运行时需要自己的堆栈信息，因此linux内核为每个进程都提供了一个内核栈kernel stack。用户态进程所使用的栈，是在进程虚拟内存线性地址空间中；而内核栈是当进程从用户空间进入内核空间时，特权级发生变化，需要切换堆栈，那么内核空间中使用的就是这个内核栈。因为内核很少的栈空间，所以通常只需分配两页（8192字节）的空间。</p>
 <p>下图中左边是一个thread_union结构体，它包含两部分，一部分是内核栈stack，第二部分是一个thread_info结构体。而在thread_info结构体里有一个指针指向该进程的task_struct结构体，反过来，task_struct里同样有一个指针<code>void *stack</code>指向这个thread_union结构体（也可以说指向该stack起始地址）。</p>
 <p><img src="https://s2.loli.net/2023/08/17/u6EMeH4BGkJAaQr.png" alt="image.png"></p>
-<pre><code class="c">// thread_union 结构体
-union thread_union
-&#123;
-    struct thread_info thread_info;
-    unsigned long stack[THREAD_SIZE/sizeof(long)];
-&#125;;
-</code></pre>
-<pre><code class="c">// thread_info结构体
-struct thread_info &#123;
-    struct pcb_struct	pcb;		/* palcode state */
- 
-    struct task_struct	*task;		/* main task structure */  
-                                    /*这里很重要，task指针指向的是所创建的进程的struct task_struct */
-    
-    unsigned int		flags;		/* low level flags */
-    unsigned int		ieee_state;	/* see fpu.h */
- 
-    struct exec_domain	*exec_domain;	/* execution domain */  /*表了当前进程是属于哪一种规范的可执行程序,
-                                         不同的系统产生的可执行文件的差异存放在变量exec_domain中 */
-    mm_segment_t		addr_limit;	/* thread address space */
-    unsigned		cpu;		/* current CPU */
-    int			preempt_count; /* 0 =&gt; preemptable, &lt;0 =&gt; BUG */
- 
-    int bpt_nsaved;
-    unsigned long bpt_addr[2];		/* breakpoint handling  */
-    unsigned int bpt_insn[2];
- 
-    struct restart_block	restart_block;
-&#125;;	
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// thread_union 结构体</span></span><br><span class="line"><span class="class"><span class="keyword">union</span> <span class="title">thread_union</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">thread_info</span> <span class="title">thread_info</span>;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="built_in">stack</span>[THREAD_SIZE/<span class="keyword">sizeof</span>(<span class="type">long</span>)];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// thread_info结构体</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">thread_info</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">pcb_struct</span>	<span class="title">pcb</span>;</span>		<span class="comment">/* palcode state */</span></span><br><span class="line"> </span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span>	*<span class="title">task</span>;</span>		<span class="comment">/* main task structure */</span>  </span><br><span class="line">    								<span class="comment">/*这里很重要，task指针指向的是所创建的进程的struct task_struct */</span></span><br><span class="line">    </span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		flags;		<span class="comment">/* low level flags */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>		ieee_state;	<span class="comment">/* see fpu.h */</span></span><br><span class="line"> </span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">exec_domain</span>	*<span class="title">exec_domain</span>;</span>	<span class="comment">/* execution domain */</span>  <span class="comment">/*表了当前进程是属于哪一种规范的可执行程序,</span></span><br><span class="line"><span class="comment">                                         不同的系统产生的可执行文件的差异存放在变量exec_domain中 */</span></span><br><span class="line">	<span class="type">mm_segment_t</span>		addr_limit;	<span class="comment">/* thread address space */</span></span><br><span class="line">	<span class="type">unsigned</span>		cpu;		<span class="comment">/* current CPU */</span></span><br><span class="line">	<span class="type">int</span>			preempt_count; <span class="comment">/* 0 =&gt; preemptable, &lt;0 =&gt; BUG */</span></span><br><span class="line"> </span><br><span class="line">	<span class="type">int</span> bpt_nsaved;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> bpt_addr[<span class="number">2</span>];		<span class="comment">/* breakpoint handling  */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> bpt_insn[<span class="number">2</span>];</span><br><span class="line"> </span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">restart_block</span>	<span class="title">restart_block</span>;</span></span><br><span class="line">&#125;;	</span><br></pre></td></tr></table></figure>
+
 <p>那么thread_info到底有什么用呢？其实这个结构体保存了task_struct中需要频繁和快速访问的字段，内核态在运行时可以迅速查到这些重要字段。此外，task_struct保存的是所有体系架构中通用的进程描述信息，而thread_info里却保存了特定体系结构汇编代码段需要访问的那部分进程的数据，因此，x86，arm等不同体系结构的thread_info并不完全相同。</p>
-<h4 id="5）三个非常重要的结构体"><a href="#5）三个非常重要的结构体" class="headerlink" title="5）三个非常重要的结构体"></a><strong>5）三个非常重要的结构体</strong></h4><pre><code class="c">struct mm_struct *mm, *active_mm;
-struct files_struct *files;
-struct fs_struct *fs; 
-</code></pre>
+<h4 id="5）三个非常重要的结构体"><a href="#5）三个非常重要的结构体" class="headerlink" title="5）三个非常重要的结构体"></a><strong>5）三个非常重要的结构体</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> *<span class="title">mm</span>, *<span class="title">active_mm</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">files_struct</span> *<span class="title">files</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">fs_struct</span> *<span class="title">fs</span>;</span> </span><br></pre></td></tr></table></figure>
+
 <p>这几个结构体相当重要，mm_struct用于描述进程的虚拟内存，files_struct描述进程打开的文件，fs_struct描述进程当前所在路径，这些结构体在我之前的几篇文章里有很详细的讲解，不了解的话可以去看看，这里呢就不再重复写了。</p>
-<h4 id="6）调度信息"><a href="#6）调度信息" class="headerlink" title="6）调度信息"></a><strong>6）调度信息</strong></h4><pre><code class="c">int prio, static_prio, normal_prio;
-unsigned int rt_priority;
-const struct sched_class *sched_class;
-struct sched_entity se;
-struct sched_rt_entity rt;
-unsigned int policy;
-</code></pre>
+<h4 id="6）调度信息"><a href="#6）调度信息" class="headerlink" title="6）调度信息"></a><strong>6）调度信息</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> prio, static_prio, normal_prio;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> rt_priority;</span><br><span class="line"><span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">sched_class</span> *<span class="title">sched_class</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_entity</span> <span class="title">se</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_rt_entity</span> <span class="title">rt</span>;</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> policy;</span><br></pre></td></tr></table></figure>
+
 <p>实时优先级范围是0到MAX_RT_PRIO-1（即99），而普通进程的静态优先级范围是从MAX_RT_PRIO到MAX_PRIO-1（即100到139），值越大静态优先级越低。</p>
 <p>static_prio用于保存静态优先级，可以通过nice系统调用来进行修改。prio用于保存动态优先级。rt_priority用于保存实时优先级。normal_prio 的值取决于静态优先级和调度策略(进程的调度策略有：先来先服务，短作业优先、时间片轮转、高响应比优先等等的调度算法)。</p>
 <p>policy表示进程的调度策略。</p>
 <h4 id="7）运行统计"><a href="#7）运行统计" class="headerlink" title="7）运行统计"></a><strong>7）运行统计</strong></h4><p>运行统计从宏观来说也是一种状态变量，但是和任务状态不同，其存储的主要是运行时间相关的成员变量，具体如下所示</p>
-<pre><code class="cpp">u64        utime;//用户态消耗的CPU时间
-u64        stime;//内核态消耗的CPU时间
-unsigned long      nvcsw;//自愿(voluntary)上下文切换计数
-unsigned long      nivcsw;//非自愿(involuntary)上下文切换计数
-u64        start_time;//进程启动时间，不包含睡眠时间
-u64        real_start_time;//进程启动时间，包含睡眠时间
-</code></pre>
-<h4 id="8）进程信号信息"><a href="#8）进程信号信息" class="headerlink" title="8）进程信号信息"></a><strong>8）进程信号信息</strong></h4><pre><code class="c">struct signal_struct *signal;//指向进程信号描述符
-struct sighand_struct *sighand;//指向进程信号处理程序描述符
-sigset_t blocked, real_blocked;//阻塞信号的掩码
-sigset_t saved_sigmask;    /* restored if set_restore_sigmask() was used */
-struct sigpending pending;//进程上还需要处理的信号
-unsigned long sas_ss_sp;//信号处理程序备用堆栈的地址
-size_t sas_ss_size;//信号处理程序的堆栈的地址
-</code></pre>
-<h4 id="9）进程权限"><a href="#9）进程权限" class="headerlink" title="9）进程权限"></a><strong>9）进程权限</strong></h4><pre><code class="c">struct signal_struct *signal;//指向进程信号描述符
-struct sighand_struct *sighand;//指向进程信号处理程序描述符
-sigset_t blocked, real_blocked;//阻塞信号的掩码
-sigset_t saved_sigmask;    /* restored if set_restore_sigmask() was used */
-struct sigpending pending;//进程上还需要处理的信号
-unsigned long sas_ss_sp;//信号处理程序备用堆栈的地址
-size_t sas_ss_size;//信号处理程序的堆栈的地址
-</code></pre>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">u64        utime;<span class="comment">//用户态消耗的CPU时间</span></span><br><span class="line">u64        stime;<span class="comment">//内核态消耗的CPU时间</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span>      nvcsw;<span class="comment">//自愿(voluntary)上下文切换计数</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span>      nivcsw;<span class="comment">//非自愿(involuntary)上下文切换计数</span></span><br><span class="line">u64        start_time;<span class="comment">//进程启动时间，不包含睡眠时间</span></span><br><span class="line">u64        real_start_time;<span class="comment">//进程启动时间，包含睡眠时间</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="8）进程信号信息"><a href="#8）进程信号信息" class="headerlink" title="8）进程信号信息"></a><strong>8）进程信号信息</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">signal_struct</span> *<span class="title">signal</span>;</span><span class="comment">//指向进程信号描述符</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sighand_struct</span> *<span class="title">sighand</span>;</span><span class="comment">//指向进程信号处理程序描述符</span></span><br><span class="line"><span class="type">sigset_t</span> blocked, real_blocked;<span class="comment">//阻塞信号的掩码</span></span><br><span class="line"><span class="type">sigset_t</span> saved_sigmask;    <span class="comment">/* restored if set_restore_sigmask() was used */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sigpending</span> <span class="title">pending</span>;</span><span class="comment">//进程上还需要处理的信号</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> sas_ss_sp;<span class="comment">//信号处理程序备用堆栈的地址</span></span><br><span class="line"><span class="type">size_t</span> sas_ss_size;<span class="comment">//信号处理程序的堆栈的地址</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="9）进程权限"><a href="#9）进程权限" class="headerlink" title="9）进程权限"></a><strong>9）进程权限</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">signal_struct</span> *<span class="title">signal</span>;</span><span class="comment">//指向进程信号描述符</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sighand_struct</span> *<span class="title">sighand</span>;</span><span class="comment">//指向进程信号处理程序描述符</span></span><br><span class="line"><span class="type">sigset_t</span> blocked, real_blocked;<span class="comment">//阻塞信号的掩码</span></span><br><span class="line"><span class="type">sigset_t</span> saved_sigmask;    <span class="comment">/* restored if set_restore_sigmask() was used */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sigpending</span> <span class="title">pending</span>;</span><span class="comment">//进程上还需要处理的信号</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> sas_ss_sp;<span class="comment">//信号处理程序备用堆栈的地址</span></span><br><span class="line"><span class="type">size_t</span> sas_ss_size;<span class="comment">//信号处理程序的堆栈的地址</span></span><br></pre></td></tr></table></figure>
+
 <p>以上就是一个task_struct结构体最常见的一些字段了，最重要的几个其实就是任务ID，亲缘关系，任务状态，内存管理以及文件系统管理，下面这幅图很好地总结了它的基本结构。</p>
 <p><img src="https://s2.loli.net/2023/08/17/B8uMgLCsJV6oITY.png" alt="image.png"></p>
 <h2 id="进程和线程的区别"><a href="#进程和线程的区别" class="headerlink" title="进程和线程的区别"></a>进程和线程的区别</h2><p>这是一个很经典的问题，同时也是面试操作系统中最最常被问到的问题，这部分包含了一些我自己的理解，如有不完善的地方欢迎和我一起聊聊。首先，我们先来看看面经是如何回答的：</p>
@@ -315,8 +248,8 @@ size_t sas_ss_size;//信号处理程序的堆栈的地址
 <p>一个线程栈其实是很小的，32位系统下，一整个进程虚拟空间有4GB大小，1GB的内核空间和3GB的用户空间，而通常默认一个线程栈只有8MB。也因此在不手动修改默认线程栈大小的情况下，32位Linux系统下通常一个进程最多也就可以创建300个左右的线程。</p>
 </blockquote>
 <p>从源码的角度看（参考Linux2.6），创建一个进程的函数是fork()，创建一个线程的函数是pthread_create()，值得注意的是，这两个函数底层都会调用同一个系统调用 clone()，而clone()函数正是会创建一个task_struct结构体，我们来看一看clone()函数的定义：</p>
-<pre><code class="c">int clone(int (*fn)(void *), void *child_stack, int flags, void *arg);   
-</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">clone</span><span class="params">(<span class="type">int</span> (*fn)(<span class="type">void</span> *), <span class="type">void</span> *child_stack, <span class="type">int</span> flags, <span class="type">void</span> *arg)</span>;   </span><br></pre></td></tr></table></figure>
+
 <p>其中我们需要尤其重点关注flags参数，flags是要复制资源的标志，描述你需要从父进程继承哪些资源，在这里设置参数：</p>
 <table>
 <thead>
