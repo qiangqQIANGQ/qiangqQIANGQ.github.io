@@ -1263,6 +1263,7 @@ article .content .caption {
 }
 #footer {
   position: absolute;
+  top: 10px;
   bottom: 10px;
   margin-bottom: 5px;
   width: 100%;
