@@ -9,7 +9,7 @@
     <meta name="description" content="main.c示例汇编文件1234567891011121314151617181920.global syscallsyscall:	mov %rdi, %rax	mov %rsi, %rdi	mov %rdx, %rsi	mov %rcx, %rdx	mov %r8, %rcx	mov %r9, %r8	mov 8(%rsp), %r9	syscall	ret.global _start_sta">
 <meta property="og:type" content="article">
 <meta property="og:title" content="cctools源码分析">
-<meta property="og:url" content="https://www.chaceq.love/2022/12/05/01analy/index.html">
+<meta property="og:url" content="https://www.chaceq.love/2022/12/05/G02_analy/index.html">
 <meta property="og:site_name" content="chaceq.love">
 <meta property="og:description" content="main.c示例汇编文件1234567891011121314151617181920.global syscallsyscall:	mov %rdi, %rax	mov %rsi, %rdi	mov %rdx, %rsi	mov %rcx, %rdx	mov %r8, %rcx	mov %r9, %r8	mov 8(%rsp), %r9	syscall	ret.global _start_sta">
 <meta property="og:locale" content="en_US">
@@ -22,9 +22,9 @@
 <meta property="og:image" content="c:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221109005127283.png">
 <meta property="og:image" content="c:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116012713779.png">
 <meta property="article:published_time" content="2022-12-05T13:01:46.744Z">
-<meta property="article:modified_time" content="2023-08-19T02:36:51.966Z">
+<meta property="article:modified_time" content="2023-08-20T04:08:50.867Z">
 <meta property="article:author" content="sqq">
-<meta property="article:tag" content="General">
+<meta property="article:tag" content="General Records">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="c:\Users\QIANGQ\AppData\Roaming\Typora\typora-user-images\image-20221116010431245.png">
     
@@ -85,7 +85,7 @@
      --><!--
        --><li><a href="/tags/Computer-Networks/">Computer Networks</a></li><!--
      --><!--
-       --><li><a href="/tags/General/">General</a></li><!--
+       --><li><a href="/tags/General-Recoeds/">General Recoeds</a></li><!--
      -->
       </ul>
     </span>
@@ -96,7 +96,7 @@
         <li><a class="icon" aria-label="Previous post" href="/2022/12/28/02malloc_1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post" href="/2021/07/31/hello-world/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Next post" href="/2021/07/31/G01_hello-world/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -109,10 +109,10 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/05/01analy/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/05/01analy/&text=cctools源码分析"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/05/01analy/&title=cctools源码分析"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=cctools源码分析&body=Check out this article: https://www.chaceq.love/2022/12/05/01analy/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/05/G02_analy/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/05/G02_analy/&text=cctools源码分析"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/05/G02_analy/&title=cctools源码分析"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=cctools源码分析&body=Check out this article: https://www.chaceq.love/2022/12/05/G02_analy/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -155,7 +155,7 @@
       
     <div class="article-tag">
         <i class="fa-solid fa-tag"></i>
-        <a class="p-category" href="/tags/General/" rel="tag">General</a>
+        <a class="p-category" href="/tags/General-Records/" rel="tag">General Records</a>
     </div>
 
 
@@ -410,7 +410,7 @@ if (kv = map_lookup(binop_table, str)) &#123;
         
           <li><a href="/tags/Computer-Networks/">Computer Networks</a></li>
         
-          <li><a href="/tags/General/">General</a></li>
+          <li><a href="/tags/General-Recoeds/">General Recoeds</a></li>
         
       </ul>
     </div>
@@ -424,10 +424,10 @@ if (kv = map_lookup(binop_table, str)) &#123;
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/05/01analy/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/05/01analy/&text=cctools源码分析"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/05/01analy/&title=cctools源码分析"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=cctools源码分析&body=Check out this article: https://www.chaceq.love/2022/12/05/01analy/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/05/G02_analy/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/05/G02_analy/&text=cctools源码分析"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/05/G02_analy/&title=cctools源码分析"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=cctools源码分析&body=Check out this article: https://www.chaceq.love/2022/12/05/G02_analy/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -465,7 +465,7 @@ if (kv = map_lookup(binop_table, str)) &#123;
      --><!--
        --><li><a href="/tags/Computer-Networks/">Computer Networks</a></li><!--
      --><!--
-       --><li><a href="/tags/General/">General</a></li><!--
+       --><li><a href="/tags/General-Recoeds/">General Recoeds</a></li><!--
      -->
       </ul>
     </nav>
