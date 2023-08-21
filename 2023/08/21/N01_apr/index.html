@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="​	ARP（Address Resolution Protocol，地址解析协议），是一种将IP地址和以太网MAC地址（物理地址）连接起来的协议。在局域网中，当主机或其他网络设备有数据要发送给另一个主机或设备时，仅仅知道对方的IP地址是不够的，因为IP数据报文必须封装成帧才能通过物理链路发送。因此发送方还需要有下一跳的物理MAC地址，也就需要一个从IP地址到物理地址的映射。  ARP报文格式​">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ARP协议及内网攻击实践">
+<meta property="og:url" content="https://www.chaceq.love/2023/08/21/N01_apr/index.html">
+<meta property="og:site_name" content="chaceq.love">
+<meta property="og:description" content="​	ARP（Address Resolution Protocol，地址解析协议），是一种将IP地址和以太网MAC地址（物理地址）连接起来的协议。在局域网中，当主机或其他网络设备有数据要发送给另一个主机或设备时，仅仅知道对方的IP地址是不够的，因为IP数据报文必须封装成帧才能通过物理链路发送。因此发送方还需要有下一跳的物理MAC地址，也就需要一个从IP地址到物理地址的映射。  ARP报文格式​">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/DbF1nzhfpC3H4eB.jpg">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/buwDEK6eIMGR9lU.png">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/hziDHbg1VdJOpSv.jpg">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/Yj6ndSoOKpPcxJF.png">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/gDHSh2Aclkfu3Vt.png">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/8qwXEFLUKypngS7.png">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/4UrgdEsVyIntBzc.png">
+<meta property="article:published_time" content="2023-08-21T13:54:54.221Z">
+<meta property="article:modified_time" content="2023-08-21T13:00:25.160Z">
+<meta property="article:author" content="sqq">
+<meta property="article:tag" content="Computer Networks">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2023/08/20/DbF1nzhfpC3H4eB.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>ARP协议及内网攻击实践</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/Operating-System/">Operating System</a></li><!--
+     --><!--
+       --><li><a href="/tags/Computer-Networks/">Computer Networks</a></li><!--
+     --><!--
+       --><li><a href="/tags/General-Records/">General Records</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023/07/05/05task_struct/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/08/21/N01_apr/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/08/21/N01_apr/&text=ARP协议及内网攻击实践"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/08/21/N01_apr/&title=ARP协议及内网攻击实践"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ARP协议及内网攻击实践&body=Check out this article: https://www.chaceq.love/2023/08/21/N01_apr/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ARP%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">ARP报文格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ARP%E6%94%BB%E5%87%BB%E5%AE%9E%E8%B7%B5"><span class="toc-number">2.</span> <span class="toc-text">ARP攻击实践</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        ARP协议及内网攻击实践
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">sqq</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-08-21T13:54:54.221Z" class="dt-published" itemprop="datePublished">2023-08-21</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Computer-Networks/" rel="tag">Computer Networks</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <blockquote>
+<p>​	ARP（Address Resolution Protocol，地址解析协议），是一种将IP地址和以太网MAC地址（物理地址）连接起来的协议。在<strong>局域网</strong>中，当主机或其他网络设备有数据要发送给另一个主机或设备时，仅仅知道对方的IP地址是不够的，因为IP数据报文必须封装成帧才能通过物理链路发送。因此发送方还需要有下一跳的物理MAC地址，也就需要一个从IP地址到物理地址的映射。</p>
+</blockquote>
+<h2 id="ARP报文格式"><a href="#ARP报文格式" class="headerlink" title="ARP报文格式"></a>ARP报文格式</h2><p>​	在TCP&#x2F;IP模型中，ARP协议属于网络层，在OSI模型中ARP协议属于链路层，从功能来看，它则是连接IP地址和MAC地址的桥梁，并在局域网的路由过程中起到了至关重要的作用。无论是主机或是交换机内部都有一张ARP缓存表，记录着邻居主机或网关的IP地址及MAC地址的映射，ARP表分为动态ARP表项和静态ARP表项，静态表项通过手动配置更新，而动态表项通过自学习更新，并设有老化时间（RFC1122中规定一般20分钟）。以下是动态ARP自学习的大致流程：</p>
+<ol>
+<li>若主机A想向主机B发送数据包Package，A首先会查看自己的ARP缓存表，确定是否包含有主机B的IP地址及对应的MAC地址表项。</li>
+<li>若有，则主机A直接利用ARP表中的MAC地址对IP数据报进行帧封装，并将数据报发送给主机B；若没有，则A会以广播方式发送一个ARP请求报文，该报文会被局域网内所有主机收到。若某主机发现该ARP请求报文是查询自己的MAC地址，则会以单播方式向主机A回应一个ARP响应报文，应答报文中就包含了自己的MAC地址。如果发现不是自己的，就忽略并丢弃该报文。</li>
+<li>而主机A在收到来自目标主机B的ARP响应报文后，会将B的MAC地址加入到自己的ARP缓存表中方便下次直接使用，然后填充数据包Package并发送出去。</li>
+</ol>
+<blockquote>
+<p>值得注意的是，若主机B位于局域网内，则主机A会按上述流程广播请求B的MAC地址；但假若主机B位于该局域网外，则A需要查询的则是网关的MAC地址而不是B的MAC地址，因为Package的下一跳是网关。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2023/08/20/DbF1nzhfpC3H4eB.jpg" alt="networks.jpg"></p>
+<p>​	ARP的报文长度28个字节，包含8个字节的报头以及20个字节的地址四元组。如下图所示：</p>
+<p><img src="https://s2.loli.net/2023/08/20/buwDEK6eIMGR9lU.png" alt="image.png"></p>
+<ul>
+<li>硬件类型：通常取1，表示以太网络。（也有其他的例如IEEE 802网络：6，ATM网络：37，等）</li>
+<li>上层协议类型：通常是IPv4，值为0x0800</li>
+<li>硬件地址长度：以太网中为6（字节）</li>
+<li>协议长度：IPv4长度为4（字节）</li>
+<li>操作码（Opcode）类型：ARP 请求为 1，ARP 响应为 2，RARP 请求为 3，RARP 响应为 4（RARP：反向地址转换协议，允许局域网的物理机器从网关服务器的 ARP 表或者缓存上请求其 IP 地址）。</li>
+</ul>
+<p>​	ARP是个独立的三层协议，不需要IP协议封装。在第二层数据链路层封装的过程中，会在ARP报文的前面加上14字节的以太网帧头，以及若干字节的PAD填充和4字节的冗余校验码（FCS）结尾。以太网中最小帧长度为64字节，若不足64字节则PAD字段会以0填充，而校验码则用于检验数据传输是否出现损坏。</p>
+<p><img src="https://s2.loli.net/2023/08/20/hziDHbg1VdJOpSv.jpg" alt="arp帧.jpg"></p>
+<p>​	我们通过wireshark抓包也可以很清晰地看到整个ARP报文的格式：（省略了帧尾的PAD和FCS字段）<img src="https://s2.loli.net/2023/08/20/Yj6ndSoOKpPcxJF.png" alt="image.png"></p>
+<p>​	我们前面提到，ARP操作码里，1表示请求报文，2表示响应报文。通常ARP的请求报文是广播请求（因为不知道该IP对应哪台设备，因此需要在局域网内广播），而响应是单播响应。广播请求的ARP帧目的地址会被填充成<strong>FF-FF-FF-FF-FF-FF</strong>，并且在ARP报文里的Target MAC address会置为0，如下图一所示。而响应报文里的Sender MAC address则说明了被查询主机的MAC地址，如图二所示。<img src="https://s2.loli.net/2023/08/20/gDHSh2Aclkfu3Vt.png" alt="image.png"><img src="https://s2.loli.net/2023/08/20/8qwXEFLUKypngS7.png" alt="image.png"></p>
+<p>​	当然，从我抓包的结果来看，还发现了一些单播请求报文，如下图所示，它们是我们网关路由器向我的设备发送过来的。这个看起来有点不符合常理，既然是单播，那就表明它知道我的MAC地址，事实上在报文帧首也确实有我的MAC地址，那为什么还要询问呢，这个问题，我目前也还没有获得到比较好的答案。<img src="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png" alt="image.png"></p>
+<p>​	除此之外，还有一种比较特殊的报文：Gratuitous ARP，它属于广播请求报文的范畴，而特殊性在于它的Sender MAC address等于Target MAC address，如下图所示，它可能有以下一些作用：</p>
+<ul>
+<li>该类型报文起到一个宣告作用。它以广播的形式将该数据包昭告大家，不需要得到回应，只为了告诉局域网内其他计算机自己的 IP 地址和 MAC 地址。</li>
+<li>可用于检测 IP 地址冲突。当一台主机发送了Gratuitous ARP 请求报文后，如果收到了 ARP 响应报文，则说明网络内已经存在使用该 IP 地址的主机。</li>
+<li>可用于更新其他主机的 ARP 缓存表。如果该主机更换了网卡，而其他主机的 ARP 缓存表仍然保留着原来的 MAC 地址。这时，可以发送Gratuitous ARP 数据包。其他主机收到该数据包后，将更新 ARP 缓存表，将原来的 MAC 地址替换为新的 MAC 地址。</li>
+</ul>
+<p><img src="https://s2.loli.net/2023/08/20/4UrgdEsVyIntBzc.png" alt="Gratuitous ARP.png"></p>
+<p>​	尽管Gratuitous ARP可用于检测地址冲突，但规范并没有给出相应手段去解决冲突，为此，2008年发行的RFC5227提出了一个机制：ACD（Address Conflict Detection，地址冲突检测）。这里提出两种比较特殊的ARP请求报文：ARP probe以及ARP announcement，同样的，它们都属于广播请求报文，即Opcode均为1。</p>
+<p>​	ARP probe 主要用于网卡刚上线时检测某个IP地址是否有设备占用。它有一个自己想要占用的候选IP地址，并放在ARP包的Target IP address里，而 Sender IP address会填充为0，这是是为了避免对其他主机的ARP cache造成污染（因为可能已经有主机正在使用该候选IP地址了；</p>
+<p>​	而 ARP announcement 则用于在选定某个IP地址后，昭示整个局域网（LAN）：本机要使用该IP地址了。它的Sender IP address 等于Target IP address（也就是说结构和Gratuitous ARP一样）。</p>
+<p>​	ACD（Address Conflict Detection，地址冲突检测）的具体流程如下。</p>
+<ol>
+<li>当网卡启动时（或者从睡眠状态恢复，或者链接建立时）会发送一个ARP probe。（为了避免多个网卡同时启动同时发ARP probe造成拥塞，有一个拥塞避免策略，不会立刻发送ARP probe，单个网卡的多个probe也不会连续发送，会有间隔时间）。</li>
+<li>发送主机可能收到ARP reply或者ARP probe，如果收到了ARP reply，说明该候选IP地址已经有主机在用了。如果收到了一个Target IP地址为候选IP的 ARP probe，说明另外一个主机也同时想要使用该候选IP地址。这种情况下，两个主机都会提醒用户出现了IP地址冲突。然后进行地址冲突处理。</li>
+<li>如果上述两种ARP包都没有收到，说明候选IP地址可用。主机发送一个ARP announcement，告诉其他主机该候选IP本人占用，而这个ARP request会让LAN中其他主机更新自身的ARP cache。</li>
+</ol>
+<p>​	地址冲突处理：《RFC5227》提供了三种可选的解决机制：1）放弃使用该IP地址。2）发送一个ARP announcement来进行IP地址“守卫”，如果冲突仍然继续存在，放弃使用这个IP。3）无视冲突，继续使用这个IP。</p>
+<p>​	当然，对于目前常见的通过DHCP动态获得IP地址的主机来说，通常并不需要在网卡启动时执行ACD过程。在某些手动静态配置IP或特殊网络配置中设备才有可能会使用ACD机制来避免相关冲突。以下是摘自RFC5227对于ACD提出背景的段落，感兴趣的同学可以点击原文了解 -&gt; <a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc5227">RFC 5227: IPv4 Address Conflict Detection (rfc-editor.org)</a> 或 <a target="_blank" rel="noopener" href="https://rfc2cn.com/rfc5227.html">RFC5227: IPv4地址冲突检测 中文版</a>。</p>
+<p>​	Historically, accidentally configuring two Internet hosts with the same IP address has often been an annoying and hard-to-diagnose problem.</p>
+<p>​	This is unfortunate, because the existing Address Resolution Protocol (ARP) provides an easy way for a host to detect this kind of misconfiguration and report it to the user.  The DHCP specification [RFC2131] briefly mentions the role of ARP in detecting misconfiguration, as illustrated in the following three excerpts from RFC 2131:</p>
+<ul>
+<li>the client SHOULD probe the newly received address, e.g., with ARP</li>
+<li>The client SHOULD perform a final check on the parameters (e.g., ARP for allocated network address)</li>
+<li>If the client detects that the address is already in use (e.g., through the use of ARP), the client MUST send a DHCPDECLINE message to the server</li>
+</ul>
+<p>​	Unfortunately, the DHCP specification does not give any guidance to implementers concerning the number of ARP packets to send, the interval between packets, the total time to wait before concluding that an address may safely be used, or indeed even which kinds of packets a host should be listening for, in order to make this determination. It leaves unspecified the action a host should take if, after concluding that an address may safely be used, it subsequently discovers that it was wrong. It also fails to specify what precautions a DHCP client should take to guard against pathological failure cases, such as a DHCP server that repeatedly OFFERs the same address, even though it has been DECLINEd multiple times.</p>
+<p>​	The authors of the DHCP specification may have been justified in thinking at the time that the answers to these questions seemed too simple, obvious, and straightforward to be worth mentioning, but unfortunately this left some of the burden of protocol design to each individual implementer. This document seeks to remedy this omission by clearly specifying the required actions.</p>
+<h2 id="ARP攻击实践"><a href="#ARP攻击实践" class="headerlink" title="ARP攻击实践"></a>ARP攻击实践</h2>
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/tags/Operating-System/">Operating System</a></li>
+        
+          <li><a href="/tags/Computer-Networks/">Computer Networks</a></li>
+        
+          <li><a href="/tags/General-Records/">General Records</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ARP%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">ARP报文格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ARP%E6%94%BB%E5%87%BB%E5%AE%9E%E8%B7%B5"><span class="toc-number">2.</span> <span class="toc-text">ARP攻击实践</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/08/21/N01_apr/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/08/21/N01_apr/&text=ARP协议及内网攻击实践"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/08/21/N01_apr/&title=ARP协议及内网攻击实践"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ARP协议及内网攻击实践&body=Check out this article: https://www.chaceq.love/2023/08/21/N01_apr/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2023
+    sqq
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/Operating-System/">Operating System</a></li><!--
+     --><!--
+       --><li><a href="/tags/Computer-Networks/">Computer Networks</a></li><!--
+     --><!--
+       --><li><a href="/tags/General-Records/">General Records</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
