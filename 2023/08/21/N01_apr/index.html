@@ -19,15 +19,15 @@
 <meta property="og:image" content="https://s2.loli.net/2023/08/20/Yj6ndSoOKpPcxJF.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/20/gDHSh2Aclkfu3Vt.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/20/8qwXEFLUKypngS7.png">
-<meta property="og:image" content="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/20/4UrgdEsVyIntBzc.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/22/ZSxzP2vkYdcJ34y.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/22/VdTrXESG5iKJqkZ.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/22/tErosQqWnAbI1YZ.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/22/FQ9uCrmhBpSa3vK.jpg">
 <meta property="og:image" content="https://s2.loli.net/2023/08/22/eiY6BXj1WQ8fc9b.png">
+<meta property="og:image" content="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png">
 <meta property="article:published_time" content="2023-08-21T13:54:54.221Z">
-<meta property="article:modified_time" content="2023-08-22T13:01:20.404Z">
+<meta property="article:modified_time" content="2023-08-23T02:54:30.042Z">
 <meta property="article:author" content="sqq">
 <meta property="article:tag" content="Computer Networks">
 <meta name="twitter:card" content="summary">
@@ -83,6 +83,8 @@
       <ul>
         <!--
        --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
      --><!--
        --><li><a href="/archives/">Writing</a></li><!--
      --><!--
@@ -193,7 +195,6 @@
 <p><img src="https://s2.loli.net/2023/08/20/hziDHbg1VdJOpSv.jpg" alt="arp帧.jpg"></p>
 <p>​	我们通过wireshark抓包也可以很清晰地看到整个ARP报文的格式：（省略了帧尾的PAD和FCS字段）<img src="https://s2.loli.net/2023/08/20/Yj6ndSoOKpPcxJF.png" alt="image.png"></p>
 <p>​	我们前面提到，ARP操作码里，1表示请求报文，2表示响应报文。通常ARP的请求报文是广播请求（因为不知道该IP对应哪台设备，因此需要在局域网内广播），而响应是单播响应。广播请求的ARP帧目的地址会被填充成<strong>FF-FF-FF-FF-FF-FF</strong>，并且在ARP报文里的Target MAC address会置为0，如下图一所示。而响应报文里的Sender MAC address则说明了被查询主机的MAC地址，如图二所示。<img src="https://s2.loli.net/2023/08/20/gDHSh2Aclkfu3Vt.png" alt="image.png"><img src="https://s2.loli.net/2023/08/20/8qwXEFLUKypngS7.png" alt="image.png"></p>
-<p>​	当然，从我抓包的结果来看，还发现了一些单播请求报文，如下图所示，它们是我们网关路由器向我的设备发送过来的。这个看起来有点不符合常理，既然是单播，那就表明它知道我的MAC地址，事实上在报文帧首也确实有我的MAC地址，那为什么还要询问呢，这个问题，我目前也还没有获得到比较好的答案。<img src="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png" alt="image.png"></p>
 <p>​	除此之外，还有一种比较特殊的报文：Gratuitous ARP，它属于广播请求报文的范畴，而特殊性在于它的Sender MAC address等于Target MAC address，如下图所示，它可能有以下一些作用：</p>
 <ul>
 <li>该类型报文起到一个宣告作用。它以广播的形式将该数据包昭告大家，不需要得到回应，只为了告诉局域网内其他计算机自己的 IP 地址和 MAC 地址。</li>
@@ -237,7 +238,7 @@
 <li>构造ARP request包扫描整个网络连接的设备，通过wireshark查看reply并记录下它们的IP及MAC地址。</li>
 <li>构造伪造的ARP reply包向网络中存在的设备发起攻击（中间人攻击）。</li>
 </ol>
-<h3 id="（一）准备设备"><a href="#（一）准备设备" class="headerlink" title="（一）准备设备"></a>（一）准备设备</h3><p>​	自己在vmware安装的Linux虚拟机网络连接默认应该是NAT模式，通过IP地址和抓包也可以很容易分析出来。我家路由器网关IP为192.168.31.1，物理机为192.168.31.47，而虚拟机Linux却是192.168.1.30，虚拟机向网关的数据包会经过物理机一层转换，因此我们需要首先把虚拟机的网络连接调整为桥接模式。虚拟机有以下三种网络模式：</p>
+<h3 id="（一）准备设备"><a href="#（一）准备设备" class="headerlink" title="（一）准备设备"></a>（一）准备设备</h3><p>​	自己在vmware安装的Linux虚拟机网络连接默认应该是NAT模式，通过IP地址和抓包也可以很容易分析出来。我家路由器网关IP为192.168.31.1，物理机为192.168.31.47，而虚拟机Linux却是192.168.80.30，虚拟机向网关的数据包会经过物理机一层转换，因此我们需要首先把虚拟机的网络连接调整为桥接模式。虚拟机有以下三种网络模式：</p>
 <p><strong>「虚拟机三种网络模式区别」</strong></p>
 <ul>
 <li><strong>NAT模式</strong>：宿主机通过NAT建立一层子网，宿主机则是该子网的网关，而<strong>虚拟机需访问互联网则要通过宿主机这个网关转发出去</strong>，从网络拓扑结构来看虚拟机网卡和宿主机网卡不在同一层次网络中。</li>
@@ -258,11 +259,12 @@
 <p>​	最后，ARP是基于IPv4的协议。在IPv6中，地址解析将由NDP（邻居发现协议，Neighbor Discovery Protocol）实现，它使用一系列IPv6控制信息报文（ICMPv6）来实现相邻节点（同一链路上的节点）的交互管理，并在一个子网中保持网络层地址和数据链路层地址之间的映射。邻居发现协议中定义了5种类型的信息：路由器宣告、路由器请求、路由重定向、邻居请求和邻居宣告。与ARP相比，NDP可以实现路由器发现、前缀发现、参数发现、地址自动配置、地址解析（代替ARP和RARP）、下一跳确定、邻居不可达检测、重复地址检测、重定向等更多功能。</p>
 <hr>
 <h2 id="踩坑补充"><a href="#踩坑补充" class="headerlink" title="踩坑补充"></a>踩坑补充</h2><ol>
-<li>在抓包分析的过程中，发现通过pcap_sendpacket函数打出的ARP包的Ethernet层的Source字段以及ARP层的Sender MAC address字段并不是我自己写进去的值，而是被改成了物理机的MAC地址，目前还不清楚具体原因。</li>
-</ol>
-<p><img src="https://s2.loli.net/2023/08/22/eiY6BXj1WQ8fc9b.png" alt="image.png"></p>
-<ol start="2">
-<li>代码中请注意取消内存对齐优化（上面代码里的第8，9行），详细可参考这篇文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Tomsidi/article/details/85710667">【C语言踩坑】PCAP发送ARP包之 – 多出的字节</a></li>
+<li><p>在抓包分析的过程中，发现通过pcap_sendpacket函数打出的ARP包的Ethernet层的Source字段以及ARP层的Sender MAC address字段并不是我自己写进去的值，而是被改成了物理机的MAC地址，目前还不清楚具体原因。<img src="https://s2.loli.net/2023/08/22/eiY6BXj1WQ8fc9b.png" alt="image.png"></p>
+</li>
+<li><p>代码中请注意取消内存对齐优化（上面代码里的第8，9行），详细可参考这篇文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Tomsidi/article/details/85710667">【C语言踩坑】PCAP发送ARP包之 – 多出的字节</a></p>
+</li>
+<li><p>理论上ARP请求应该是广播的，但从我抓包的结果来看，还发现了一些单播请求报文，如下图所示，它们是从我的网关路由器向我的设备发送过来的。这个看起来有点不符合常理，既然是单播，那就表明它知道我的MAC地址，事实上在报文帧首也确实有我的MAC地址（只不过这个地址确实是在Ethernet层而非在ARP层），至于为什么，我目前也还没有获得到比较好的答案。<img src="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png" alt="image.png"></p>
+</li>
 </ol>
 
   </div>
@@ -278,6 +280,8 @@
       <ul>
         
           <li><a href="/">Home</a></li>
+        
+          <li><a href="/search/">Search</a></li>
         
           <li><a href="/archives/">Writing</a></li>
         
@@ -333,6 +337,8 @@
       <ul>
         <!--
        --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
      --><!--
        --><li><a href="/archives/">Writing</a></li><!--
      --><!--
