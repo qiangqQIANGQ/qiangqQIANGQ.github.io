@@ -1351,7 +1351,7 @@ article .content .caption {
   width: 100%;
   outline: none;
   border: solid 1px #8c8c8c;
-  border-radius: 50%;
+  border-radius: 50% !important;
   border-width: 2px;
   background-color: #fff;
   color: #383838;
