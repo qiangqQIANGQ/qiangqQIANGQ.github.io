@@ -1347,17 +1347,17 @@ article .content .caption {
   color: #383838;
 }
 .search-input {
-  padding: 4px 7px;
+  padding: 4px 15px;
   width: 100%;
   outline: none;
   border: solid 1px #8c8c8c;
-  border-radius: 50% !important;
+  border-radius: 1000px !important;
   border-width: 2px;
   background-color: #fff;
   color: #383838;
   font-size: 1rem;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
+  -webkit-border-radius: 1000px !important;
+  -moz-border-radius: 1000px !important;
 }
 .search-input:focus {
   border: solid 1px #2bbc8a;
