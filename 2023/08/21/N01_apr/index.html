@@ -27,7 +27,7 @@
 <meta property="og:image" content="https://s2.loli.net/2023/08/22/eiY6BXj1WQ8fc9b.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png">
 <meta property="article:published_time" content="2023-08-21T13:54:54.221Z">
-<meta property="article:modified_time" content="2023-08-23T02:54:30.042Z">
+<meta property="article:modified_time" content="2023-08-23T07:32:45.834Z">
 <meta property="article:author" content="sqq">
 <meta property="article:tag" content="Computer Networks">
 <meta name="twitter:card" content="summary">
@@ -259,12 +259,10 @@
 <p>​	最后，ARP是基于IPv4的协议。在IPv6中，地址解析将由NDP（邻居发现协议，Neighbor Discovery Protocol）实现，它使用一系列IPv6控制信息报文（ICMPv6）来实现相邻节点（同一链路上的节点）的交互管理，并在一个子网中保持网络层地址和数据链路层地址之间的映射。邻居发现协议中定义了5种类型的信息：路由器宣告、路由器请求、路由重定向、邻居请求和邻居宣告。与ARP相比，NDP可以实现路由器发现、前缀发现、参数发现、地址自动配置、地址解析（代替ARP和RARP）、下一跳确定、邻居不可达检测、重复地址检测、重定向等更多功能。</p>
 <hr>
 <h2 id="踩坑补充"><a href="#踩坑补充" class="headerlink" title="踩坑补充"></a>踩坑补充</h2><ol>
-<li><p>在抓包分析的过程中，发现通过pcap_sendpacket函数打出的ARP包的Ethernet层的Source字段以及ARP层的Sender MAC address字段并不是我自己写进去的值，而是被改成了物理机的MAC地址，目前还不清楚具体原因。<img src="https://s2.loli.net/2023/08/22/eiY6BXj1WQ8fc9b.png" alt="image.png"></p>
-</li>
-<li><p>代码中请注意取消内存对齐优化（上面代码里的第8，9行），详细可参考这篇文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Tomsidi/article/details/85710667">【C语言踩坑】PCAP发送ARP包之 – 多出的字节</a></p>
-</li>
-<li><p>理论上ARP请求应该是广播的，但从我抓包的结果来看，还发现了一些单播请求报文，如下图所示，它们是从我的网关路由器向我的设备发送过来的。这个看起来有点不符合常理，既然是单播，那就表明它知道我的MAC地址，事实上在报文帧首也确实有我的MAC地址（只不过这个地址确实是在Ethernet层而非在ARP层），至于为什么，我目前也还没有获得到比较好的答案。<img src="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png" alt="image.png"></p>
-</li>
+<li>ARP协议只用于局域网内的设备寻址，当两个路由器之间通信时，会采用基于LS或DV等算法的BGP（Border Gateway Protocol，边界网关协议），OSPF（Open Shortest Path First，开放最短路径优先协议）等进行通信，具体来说就是会根据数据包的目的IP地址决定从哪个端口转发出去，而不会直接使用到MAC地址作为路由。总结就是：<strong>MAC地址是局域网（LAN）层级的地址，在局域网内起作用；而IP地址和路由表用于跨越不同局域网的通信。</strong></li>
+<li>在抓包分析的过程中，发现通过pcap_sendpacket函数打出的ARP包的Ethernet层的Source字段以及ARP层的Sender MAC address字段并不是我自己写进去的值，而是被改成了物理机的MAC地址，目前还不清楚具体原因。<img src="https://s2.loli.net/2023/08/22/eiY6BXj1WQ8fc9b.png" alt="image.png"></li>
+<li>代码中请注意取消内存对齐优化（上面代码里的第8，9行），详细可参考这篇文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Tomsidi/article/details/85710667">【C语言踩坑】PCAP发送ARP包之 – 多出的字节</a></li>
+<li>理论上ARP请求应该是广播的，但从我抓包的结果来看，还发现了一些单播请求报文，如下图所示，它们是从我的网关路由器向我的设备发送过来的。这个看起来有点不符合常理，既然是单播，那就表明它知道我的MAC地址，事实上在报文帧首也确实有我的MAC地址（只不过这个地址确实是在Ethernet层而非在ARP层），至于为什么，我目前也还没有获得到比较好的答案。<img src="https://s2.loli.net/2023/08/20/bV1ETDA7zn2P9mr.png" alt="image.png"></li>
 </ol>
 
   </div>
