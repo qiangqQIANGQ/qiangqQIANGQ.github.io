@@ -9,7 +9,7 @@
     <meta name="description" content="学习 Linux 分析与应用的过程中，最常被大家所提到的也就是：进程和线程。进程管理是所有操作系统的心脏，毫无疑问，这确实是一个很有意思的问题，值得我们去掌握。  前言操作系统中，是用进程控制块（process control block，PCB）数据结构来描述进程的。也就是说：一个进程，我们可以将其看作是拥有一系列资源的一个个块。而这些资源的统一封装结构体便是：task_struct。在32位">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux进程线程源码浅析">
-<meta property="og:url" content="https://www.chaceq.love/2023/07/05/05task_struct/index.html">
+<meta property="og:url" content="https://www.chaceq.love/2023/07/05/O04_task_struct/index.html">
 <meta property="og:site_name" content="chaceq.love">
 <meta property="og:description" content="学习 Linux 分析与应用的过程中，最常被大家所提到的也就是：进程和线程。进程管理是所有操作系统的心脏，毫无疑问，这确实是一个很有意思的问题，值得我们去掌握。  前言操作系统中，是用进程控制块（process control block，PCB）数据结构来描述进程的。也就是说：一个进程，我们可以将其看作是拥有一系列资源的一个个块。而这些资源的统一封装结构体便是：task_struct。在32位">
 <meta property="og:locale" content="en_US">
@@ -21,7 +21,7 @@
 <meta property="og:image" content="https://s2.loli.net/2023/08/17/Rue9f8s3CaXwpY4.png">
 <meta property="og:image" content="https://s2.loli.net/2023/08/17/tApyiRqgTONhM6S.png">
 <meta property="article:published_time" content="2023-07-05T12:34:46.888Z">
-<meta property="article:modified_time" content="2023-08-23T04:21:46.096Z">
+<meta property="article:modified_time" content="2023-08-28T14:24:12.669Z">
 <meta property="article:author" content="sqq">
 <meta property="article:tag" content="Operating System">
 <meta name="twitter:card" content="summary">
@@ -94,10 +94,10 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/2023/08/21/N01_apr/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/2023/08/21/N01_arp/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post" href="/2023/01/16/04Linux_fileSystem/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Next post" href="/2023/01/16/O03_Linux_fileSystem/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -110,10 +110,10 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/07/05/05task_struct/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/07/05/05task_struct/&text=Linux进程线程源码浅析"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/07/05/05task_struct/&title=Linux进程线程源码浅析"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Linux进程线程源码浅析&body=Check out this article: https://www.chaceq.love/2023/07/05/05task_struct/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/07/05/O04_task_struct/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/07/05/O04_task_struct/&text=Linux进程线程源码浅析"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/07/05/O04_task_struct/&title=Linux进程线程源码浅析"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux进程线程源码浅析&body=Check out this article: https://www.chaceq.love/2023/07/05/O04_task_struct/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -196,6 +196,7 @@
 <li><p>group_leader指向其所在进程组的主进程。</p>
 </li>
 </ul>
+<p><img src="https://s2.loli.net/2023/08/17/cCZumioGW864ALj.png" alt="image.png"></p>
 <blockquote>
 <p>Linux下有3个特殊的进程，idle进程(PID &#x3D; 0), init进程(PID &#x3D; 1)和kthreadd(PID &#x3D; 2)。</p>
 <ol>
@@ -204,7 +205,6 @@
 <li>kthreadd进程由idle通过kernel_thread创建，并始终运行在内核空间, 负责所有内核线程的调度和管理。</li>
 </ol>
 </blockquote>
-<p><img src="https://s2.loli.net/2023/08/17/cCZumioGW864ALj.png" alt="image.png"></p>
 <h4 id="3）进程的状态"><a href="#3）进程的状态" class="headerlink" title="**3）进程的状态 **"></a>**3）进程的状态 **</h4><p>状态state通过设置比特位的方式来赋值，来表示进程的状态，它们在进程调度中有着很关键的作用，state的可能取值为以下一些宏：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="type">long</span> state；</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_RUNNING        0<span class="comment">//进程要么正在执行，要么准备执行</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_INTERRUPTIBLE  1 <span class="comment">//可中断的睡眠，可以通过一个信号唤醒</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_UNINTERRUPTIBLE    2 <span class="comment">//不可中断睡眠，不可以通过信号进行唤醒</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __TASK_STOPPED      4 <span class="comment">//进程停止执行</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __TASK_TRACED       8 <span class="comment">//进程被追踪</span></span></span><br><span class="line"><span class="comment">/* in tsk-&gt;exit_state */</span> </span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EXIT_ZOMBIE     16 <span class="comment">//僵尸状态的进程，表示进程被终止，但是父进程还没有获取它的终止信息，比如进程有没有执行完等信息。                     </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EXIT_DEAD       32 <span class="comment">//进程的最终状态，进程死亡</span></span></span><br><span class="line"><span class="comment">/* in tsk-&gt;state again */</span> </span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_DEAD       64 <span class="comment">//死亡</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_WAKEKILL       128 <span class="comment">//唤醒并杀死的进程</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TASK_WAKING     256 <span class="comment">//唤醒进程</span></span></span><br></pre></td></tr></table></figure>
 
@@ -293,7 +293,7 @@
 <hr>
 <p>讲到这里，就有一个非常非常重要的结论了，我认为：线程是一个具体的概念，一个线程对应一个线程栈，也对应一个task_struct，一个进程可以包含一个或者多个线程。而进程实际上是一个抽象的概念，比如如果一个程序包含5个线程，那么这5个task_struct以及它们的资源组成的这么一个箱子的整体，那就是一个进程，<strong>而进程本身在Linux系统里并没有具体的结构体去描述它</strong>，因此我认为<strong>进程实际上就是一系列pid相同的线程的集合</strong>。换句话说，<strong>线程是一个物理上的具象（因为它由task_struct所描述），而进程是一个逻辑上的集合。</strong></p>
 <blockquote>
-<p><strong>进程实际上就是一系列tgid相同的线程的集合。</strong></p>
+<p><strong>进程实际上就是一系列pid相同的线程的集合。</strong></p>
 </blockquote>
 <p>此外，我们时常有听到主线程和子线程的概念，其实讲到这里我们就明白，从task_struct的角度看，所谓的主线程和子线程其实并没有任何主次之分，因为无论是在资源享有，线程调度等各个方面，所谓的主线程也都并没有比子线程 “高人一等”。可能唯一的一点特殊性就在于：所谓的主线程的pid等于整个进程的tgid吧（PS：这一点我其实不确定，待考究）。<strong>因此从内核这个意义上来看，我们可以抛弃主线程子线程这一概念，因为所有的线程都是平等的。</strong></p>
 <p>那么有同学可能会有疑问，在下面这个例子里，为什么main退出之后其他子线程也会退出，而某一子线程运行结束之后其他子线程以及main主线程不会退出呢，这难道不是意味着main主线程比三个子线程更牛吗？<img src="https://s2.loli.net/2023/08/17/tApyiRqgTONhM6S.png" alt="image.png"></p>
@@ -349,10 +349,10 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/07/05/05task_struct/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/07/05/05task_struct/&text=Linux进程线程源码浅析"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/07/05/05task_struct/&title=Linux进程线程源码浅析"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Linux进程线程源码浅析&body=Check out this article: https://www.chaceq.love/2023/07/05/05task_struct/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/07/05/O04_task_struct/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/07/05/O04_task_struct/&text=Linux进程线程源码浅析"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/07/05/O04_task_struct/&title=Linux进程线程源码浅析"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux进程线程源码浅析&body=Check out this article: https://www.chaceq.love/2023/07/05/O04_task_struct/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>

@@ -9,7 +9,7 @@
     <meta name="description" content="上一章节分析到 Linux 的虚拟地址空间布局，正好这段时间在学 Linux 内核，这部分内存管理是上一篇文章的有力实践，通过自己实现一个内核模块，可以进一步加深对 Linux 内存管理的认识，同时也对 Linux 内核开发有个学习！源代码在文末我放在 Gitee 上了，友友们遇到 bug 可以自行对照一下。  驱动功能演示​	目标：实现一个内核驱动模块，建立一个设备文件，在用户态用 mmap">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux内核分析应用一 - 多进程共享内存内核驱动模块">
-<meta property="og:url" content="https://www.chaceq.love/2023/01/13/03Linux_kernel_1/index.html">
+<meta property="og:url" content="https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/index.html">
 <meta property="og:site_name" content="chaceq.love">
 <meta property="og:description" content="上一章节分析到 Linux 的虚拟地址空间布局，正好这段时间在学 Linux 内核，这部分内存管理是上一篇文章的有力实践，通过自己实现一个内核模块，可以进一步加深对 Linux 内存管理的认识，同时也对 Linux 内核开发有个学习！源代码在文末我放在 Gitee 上了，友友们遇到 bug 可以自行对照一下。  驱动功能演示​	目标：实现一个内核驱动模块，建立一个设备文件，在用户态用 mmap">
 <meta property="og:locale" content="en_US">
@@ -94,10 +94,10 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/2023/01/16/04Linux_fileSystem/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/2023/01/16/O03_Linux_fileSystem/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post" href="/2022/12/28/02malloc_1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Next post" href="/2022/12/28/O01_malloc_1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -110,10 +110,10 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/01/13/03Linux_kernel_1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/01/13/03Linux_kernel_1/&text=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/01/13/03Linux_kernel_1/&title=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Linux内核分析应用一 - 多进程共享内存内核驱动模块&body=Check out this article: https://www.chaceq.love/2023/01/13/03Linux_kernel_1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/&text=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/&title=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux内核分析应用一 - 多进程共享内存内核驱动模块&body=Check out this article: https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -345,10 +345,10 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/01/13/03Linux_kernel_1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/01/13/03Linux_kernel_1/&text=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/01/13/03Linux_kernel_1/&title=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Linux内核分析应用一 - 多进程共享内存内核驱动模块&body=Check out this article: https://www.chaceq.love/2023/01/13/03Linux_kernel_1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/&text=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/&title=Linux内核分析应用一 - 多进程共享内存内核驱动模块"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux内核分析应用一 - 多进程共享内存内核驱动模块&body=Check out this article: https://www.chaceq.love/2023/01/13/O02_Linux_kernel_1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>

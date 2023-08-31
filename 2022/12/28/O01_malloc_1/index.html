@@ -9,7 +9,7 @@
     <meta name="description" content="在当时做编译器项目的时候，由于自己负责汇编代码生成及优化这一块，其中自然要去考虑各个段的虚拟空间布局问题，所以自己去浅了解了一下关于 Linux 内存分配的相关知识。毫不夸张地说，了解 Linux 的堆内存分配机制是通向进一步学习操作系统的必经之路。以下，第一章节先浅浅写个前置知识回顾虚拟空间布局基本原理，往后再进一步探索 malloc 相关源码。  第一部分 - Linux虚拟内存空间​		我">
 <meta property="og:type" content="article">
 <meta property="og:title" content="malloc内存管理浅析一 - 前奏">
-<meta property="og:url" content="https://www.chaceq.love/2022/12/28/02malloc_1/index.html">
+<meta property="og:url" content="https://www.chaceq.love/2022/12/28/O01_malloc_1/index.html">
 <meta property="og:site_name" content="chaceq.love">
 <meta property="og:description" content="在当时做编译器项目的时候，由于自己负责汇编代码生成及优化这一块，其中自然要去考虑各个段的虚拟空间布局问题，所以自己去浅了解了一下关于 Linux 内存分配的相关知识。毫不夸张地说，了解 Linux 的堆内存分配机制是通向进一步学习操作系统的必经之路。以下，第一章节先浅浅写个前置知识回顾虚拟空间布局基本原理，往后再进一步探索 malloc 相关源码。  第一部分 - Linux虚拟内存空间​		我">
 <meta property="og:locale" content="en_US">
@@ -92,7 +92,7 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/2023/01/13/03Linux_kernel_1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/2023/01/13/O02_Linux_kernel_1/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
         <li><a class="icon" aria-label="Next post" href="/2022/12/05/G02_analy/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
@@ -108,10 +108,10 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/02malloc_1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/02malloc_1/&text=malloc内存管理浅析一 - 前奏"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/02malloc_1/&title=malloc内存管理浅析一 - 前奏"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=malloc内存管理浅析一 - 前奏&body=Check out this article: https://www.chaceq.love/2022/12/28/02malloc_1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&text=malloc内存管理浅析一 - 前奏"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&title=malloc内存管理浅析一 - 前奏"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=malloc内存管理浅析一 - 前奏&body=Check out this article: https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -297,10 +297,10 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/02malloc_1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/02malloc_1/&text=malloc内存管理浅析一 - 前奏"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/02malloc_1/&title=malloc内存管理浅析一 - 前奏"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=malloc内存管理浅析一 - 前奏&body=Check out this article: https://www.chaceq.love/2022/12/28/02malloc_1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&text=malloc内存管理浅析一 - 前奏"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&title=malloc内存管理浅析一 - 前奏"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=malloc内存管理浅析一 - 前奏&body=Check out this article: https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
