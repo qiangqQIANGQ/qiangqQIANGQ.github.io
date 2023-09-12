@@ -8,8 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
     <meta name="description" content="在当时做编译器项目的时候，由于自己负责汇编代码生成及优化这一块，其中自然要去考虑各个段的虚拟空间布局问题，所以自己去浅了解了一下关于 Linux 内存分配的相关知识。毫不夸张地说，了解 Linux 的堆内存分配机制是通向进一步学习操作系统的必经之路。以下，第一章节先浅浅写个前置知识回顾虚拟空间布局基本原理，往后再进一步探索 malloc 相关源码。  第一部分 - Linux虚拟内存空间​		我">
 <meta property="og:type" content="article">
-<meta property="og:title" content="malloc内存管理浅析一 - 前奏">
-<meta property="og:url" content="https://www.chaceq.love/2022/12/28/O01_malloc_1/index.html">
+<meta property="og:title" content="Linux虚拟内存解析 - 用户空间">
+<meta property="og:url" content="https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/index.html">
 <meta property="og:site_name" content="chaceq.love">
 <meta property="og:description" content="在当时做编译器项目的时候，由于自己负责汇编代码生成及优化这一块，其中自然要去考虑各个段的虚拟空间布局问题，所以自己去浅了解了一下关于 Linux 内存分配的相关知识。毫不夸张地说，了解 Linux 的堆内存分配机制是通向进一步学习操作系统的必经之路。以下，第一章节先浅浅写个前置知识回顾虚拟空间布局基本原理，往后再进一步探索 malloc 相关源码。  第一部分 - Linux虚拟内存空间​		我">
 <meta property="og:locale" content="en_US">
@@ -19,7 +19,7 @@
 <meta property="og:image" content="https://s2.loli.net/2023/01/06/tGWFcAsurUDRB4e.png">
 <meta property="og:image" content="https://s2.loli.net/2023/01/11/zr8pEgfcRhX4mIn.png">
 <meta property="article:published_time" content="2022-12-28T12:20:52.416Z">
-<meta property="article:modified_time" content="2023-08-19T02:58:00.136Z">
+<meta property="article:modified_time" content="2023-09-12T04:18:06.545Z">
 <meta property="article:author" content="sqq">
 <meta property="article:tag" content="Operating System">
 <meta name="twitter:card" content="summary">
@@ -43,7 +43,7 @@
       
     
     <!-- title -->
-    <title>malloc内存管理浅析一 - 前奏</title>
+    <title>Linux虚拟内存解析 - 用户空间</title>
     <!-- async scripts -->
     <!-- Google Analytics -->
 
@@ -108,10 +108,10 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&text=malloc内存管理浅析一 - 前奏"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&title=malloc内存管理浅析一 - 前奏"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=malloc内存管理浅析一 - 前奏&body=Check out this article: https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/&text=Linux虚拟内存解析 - 用户空间"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/&title=Linux虚拟内存解析 - 用户空间"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux虚拟内存解析 - 用户空间&body=Check out this article: https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -131,7 +131,7 @@
   <header>
     
     <h1 class="posttitle p-name" itemprop="name headline">
-        malloc内存管理浅析一 - 前奏
+        Linux虚拟内存解析 - 用户空间
     </h1>
 
 
@@ -167,23 +167,31 @@
 <p>在当时做编译器项目的时候，由于自己负责汇编代码生成及优化这一块，其中自然要去考虑各个段的虚拟空间布局问题，所以自己去浅了解了一下关于 Linux 内存分配的相关知识。毫不夸张地说，了解 Linux 的堆内存分配机制是通向进一步学习操作系统的必经之路。以下，第一章节先浅浅写个前置知识回顾虚拟空间布局基本原理，往后再进一步探索 malloc 相关源码。</p>
 </blockquote>
 <h2 id="第一部分-Linux虚拟内存空间"><a href="#第一部分-Linux虚拟内存空间" class="headerlink" title="第一部分 - Linux虚拟内存空间"></a>第一部分 - Linux虚拟内存空间</h2><p>​		我们的故事要从这张图片说起，这是 Linux 进程虚拟地址空间的布局图。在32位系统下虚拟空间有4GB (2^32)，其中1GB作为所有进程共享的内核空间（下图左，即无论有多少个进程，该内核空间映射在物理空间中只有一份，由所有进程共享），而3GB作为每个进程独占的用户空间（下图右）。Linux 系统在准备运行 elf 格式的程序文件时，会调用加载器 loader 把可执行文件中的各个段依次载入到从某一地址开始的空间中。</p>
-<p>​		如下图右所示，在这3GB的用户空间中，高地址作为函数调用栈 stack，在程序运行过程中向低地址方向增长，低地址开始依次是保留区，.text .rodata .init段，.data .bss段，再往上便是堆 heap 以及 memory mapping segment 映射区。</p>
+<p>​		如下图右所示，在这3GB的用户空间中，高地址作为函数调用栈 stack，在程序运行过程中向低地址方向增长，低地址开始依次是保留区，.text .rodata .init段，.data .bss段，再往上便是堆 heap 以及 memory mapping segment 映射区。接下来我们从低地址到高地址依次来看一下。</p>
 <p><img src="https://s2.loli.net/2022/12/28/LsGvSXgwTRdiymF.png" alt="Linux内存布局.png"></p>
 <ul>
-<li><p>栈区：上图虽只画了一个stack区，但若同一进程下有多线程，那么就会有多个互相独立的 stack 区，Linux 下每个线程栈最大值默认 8 MB，可以用 <code>ulimit -s</code>查看，他们都分布在用户空间的相对高地址区域，向下增长。</p>
+<li><p><strong>保留区：</strong>位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况，因为“历史原因”前 128.28125MB 属于保留空间。。</p>
 </li>
-<li><p>.text段：代码段，存储只读的程序执行代码，即机器指令。程序运行过程中 pc 指针指向该区域对应执行（取指）的代码。</p>
+<li><p><strong>.text段：</strong>代码段，存储只读的程序执行代码，即机器指令，通常代码段是可共享的。程序运行过程中 pc 指针指向该区域对应执行（取指）的代码。</p>
 </li>
-<li><p>.rodata段：只读数据段，通常存放类似 <code>char *str = &quot;helloworld&quot;</code>的字符串以及 const 修饰的全局变量。</p>
+<li><p><strong>.rodata段：</strong>只读数据段，通常存放类似 <code>char *str = &quot;helloworld&quot;</code>的字符串以及 const 修饰的全局变量。</p>
 </li>
-<li><p>.data段：数据段，通常存放初始化过的全局及静态变量。</p>
+<li><p><strong>.data段：</strong>数据段，通常存放初始化过且不为0的全局及静态变量，可读写。</p>
 </li>
-<li><p>.bss段：未初始化全局及静态变量段。若源文件中定义了 <code>char arr[10000];</code>而并未初始化，那么生成的可执行文件中并不会占用10000字节的存储空间而仅仅是做个大小标记。而是在程序执行的时候分配空间，并且全部初始化为0。</p>
-<p>​		我们在使用 malloc() 进行动态内存分配时，底层实现会有两条分配路线，当 malloc 申请小于128KB空间时，操作系统提供了 brk() 函数，c运行库提供了sbrk() 函数，在 heap 区域进行分配。而在申请超过128KB的堆内存，或者程序运行过程中有所需要打开的文件以及动态链接库文件，操作系统提供了 mmap() 函数和 munmap() 函数，分配的内存会被映射到 mmap 区域。</p>
+<li><p><strong>.bss段：</strong>未初始化全局及静态变量段。若源文件中定义了 <code>char arr[10000];</code>而并未初始化，那么生成的可执行文件中并不会占用10000字节的存储空间而仅仅是做个大小标记。而是在程序执行的时候分配空间，并且全部初始化为0。</p>
+<ul>
+<li>当程序读取数据段的数据时，系统会出发缺页故障，从而分配相应的物理内存；当程序读取BSS段的数据时，内核会将其转到一个全零页面，不会发生缺页故障，也不会为其分配相应的物理内存。</li>
+</ul>
 </li>
-<li><p>heap : 堆区域。类似于栈的实现，mm-&gt;start_brk 指针始终指向 heap 的底部用于标记 heap 区域的开始位置，而 heap 顶部有个 mm-&gt;brk 指针，通过该指针的上下移动便可以分配堆内存。该方案适用于分配小块内存，因为类似于栈的实现形式，若高地址的内存未被释放，brk 指针便不会下移，这可能导致低地址已经释放的内存无法归还造成内存碎片。</p>
+<li><p><strong>heap :</strong> 堆区域。类似于栈的实现，mm-&gt;start_brk 指针始终指向 heap 的底部用于标记 heap 区域的开始位置，而 heap 顶部有个 mm-&gt;brk 指针，通过该指针的上下移动便可以分配堆内存。该方案适用于分配小块内存，因为类似于栈的实现形式，若高地址的内存未被释放，brk 指针便不会下移，这可能导致低地址已经释放的内存无法归还造成内存碎片。<strong>堆中内容是匿名的，意味着不能按名字直接访问，只能通过指针间接访问。</strong></p>
 </li>
-<li><p>mmap：匿名映射区。该部分占用整个虚拟内存的绝大部分空间。补充：在Linux2.6以前采用 legacy layout 布局，该区域 mmap 起始位置大概在0X40000000处，向上增长约有2GB的空间，该方案 heap 与 mmap 区域无法共享内存。新版 modern layout 布局 mmap 起始位置大概在0XBFxxxxxx处，向下增长，与 heap 区相对，总共大概有2.9GB的可分配空间。</p>
+<li><p><strong>mmap：</strong>匿名映射区，该部分占用整个虚拟内存的绝大部分空间。内核将硬盘文件的内容直接映射到内存，任何应用程序都可通过Linux的mmap()系统调用或Windows的CreateFileMapping()&#x2F;MapViewOfFile()请求这种映射，内存映射是一种方便高效的文件I&#x2F;O方式， 因而被用于装载动态共享库。此外，用户也可创建匿名内存映射，该映射没有对应的文件, 可用于存放程序数据，例如malloc()申请的大块内存。</p>
+<ul>
+<li>补充：在Linux2.6以前采用 legacy layout 布局，该区域 mmap 起始位置大概在0X40000000处，向上增长约有2GB的空间，该方案 heap 与 mmap 区域无法共享内存。新版 modern layout 布局 mmap 起始位置大概在0XBFxxxxxx处，向下增长，与 heap 区相对，总共大概有2.9GB的可分配空间。</li>
+<li>我们在使用 malloc() 进行动态内存分配时，底层实现会有两条分配路线，当 malloc 申请小于128KB空间时，操作系统提供了 brk() 函数，c运行库提供了sbrk() 函数，在 heap 区域进行分配。而在申请超过128KB的堆内存，或者程序运行过程中有所需要打开的文件以及动态链接库文件，操作系统提供了 mmap() 函数和 munmap() 函数，分配的内存会被映射到 mmap 区域。</li>
+</ul>
+</li>
+<li><p><strong>栈区：</strong>栈区存放线程运行过程中的局部变量，临时变量，环境变量等信息，通过sp指针的移动自动扩张以及回收。上图虽只画了一个stack区，但若同一进程下有多线程，那么就会有多个互相独立的 stack 区，Linux 下每个线程栈最大值默认 8 MB，可以用 <code>ulimit -s</code>查看，他们都分布在用户空间的相对高地址区域，向下增长。</p>
 <blockquote>
 <p>​		补充个小知识点，在上图中我们能看到一些 Random offest ，比如 stack 域和 mmap 域之间的 Random mmap offset，为什么会有这些空洞呢，其实是因为如果各个段都采用固定的起始地址，这样实现起来简单，而且所有 Linux 系统都能保持统一，但是对于攻击者来说，构建恶意代码（比如通过缓冲区溢出获得栈内存区域的访问权，进而恶意操纵栈的内容）就变得更加容易。因此一个可以采用的反制措施就是不为这些 segments 的起点选择固定位置，而是在每次新进程启动时（通过设置PF_RANDOMIZE标志）随机改变这些值的设置，这也就形成了一系列的 Random offest 间隙。</p>
 </blockquote>
@@ -297,10 +305,10 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&text=malloc内存管理浅析一 - 前奏"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/O01_malloc_1/&title=malloc内存管理浅析一 - 前奏"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=malloc内存管理浅析一 - 前奏&body=Check out this article: https://www.chaceq.love/2022/12/28/O01_malloc_1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/&text=Linux虚拟内存解析 - 用户空间"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/&title=Linux虚拟内存解析 - 用户空间"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux虚拟内存解析 - 用户空间&body=Check out this article: https://www.chaceq.love/2022/12/28/O01_virtual_mem_1/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
