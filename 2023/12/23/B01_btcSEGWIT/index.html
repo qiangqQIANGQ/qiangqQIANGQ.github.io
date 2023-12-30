@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <meta name="description" content="​	2008年10月31日，中本聪（Satoshi Nakamoto）发布了一篇名为《比特币：一种点对点的电子现金系统》（Bitcoin: A Peer-to-Peer Electronic Cash System）论文，详细阐述了比特币的理念和技术细节。随后，2009年1月3日，中本聪挖出了比特币网络的创世区块，标志着比特币的诞生。 ​	比特币自诞生后，吸引了众多加密学，计算机及金融领域的人士参">
+    <meta name="description" content="​	2008年10月31日，中本聪（Satoshi Nakamoto）发布了一篇名为《比特币：一种点对点的电子现金系统》（Bitcoin: A Peer-to-Peer Electronic Cash System）论文，详细阐述了比特币的理念和技术细节。随后，2009年1月3日，中本聪挖出了比特币网络的创世区块，标志着比特币的诞生。 ​	比特币自诞生后，吸引了众多计算机，金融领域的人士参与。随着">
 <meta property="og:type" content="article">
 <meta property="og:title" content="BTC隔离见证升级始末 - 前奏">
 <meta property="og:url" content="https://www.chaceq.love/2023/12/23/B01_btcSEGWIT/index.html">
 <meta property="og:site_name" content="chaceq.love">
-<meta property="og:description" content="​	2008年10月31日，中本聪（Satoshi Nakamoto）发布了一篇名为《比特币：一种点对点的电子现金系统》（Bitcoin: A Peer-to-Peer Electronic Cash System）论文，详细阐述了比特币的理念和技术细节。随后，2009年1月3日，中本聪挖出了比特币网络的创世区块，标志着比特币的诞生。 ​	比特币自诞生后，吸引了众多加密学，计算机及金融领域的人士参">
+<meta property="og:description" content="​	2008年10月31日，中本聪（Satoshi Nakamoto）发布了一篇名为《比特币：一种点对点的电子现金系统》（Bitcoin: A Peer-to-Peer Electronic Cash System）论文，详细阐述了比特币的理念和技术细节。随后，2009年1月3日，中本聪挖出了比特币网络的创世区块，标志着比特币的诞生。 ​	比特币自诞生后，吸引了众多计算机，金融领域的人士参与。随着">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://s2.loli.net/2023/12/27/oNVUulijx6EWvyG.png">
 <meta property="og:image" content="https://s2.loli.net/2023/12/26/DYBuyvSFU2r8h9o.jpg">
@@ -21,7 +21,7 @@
 <meta property="og:image" content="https://s2.loli.net/2023/12/30/q5tpXANivlmMbhD.png">
 <meta property="og:image" content="https://s2.loli.net/2023/12/30/jHnM6SGAU9ekQqu.jpg">
 <meta property="article:published_time" content="2023-12-23T12:29:54.855Z">
-<meta property="article:modified_time" content="2023-12-30T10:43:30.685Z">
+<meta property="article:modified_time" content="2023-12-30T11:17:24.268Z">
 <meta property="article:author" content="sqq">
 <meta property="article:tag" content="Block Chain">
 <meta name="twitter:card" content="summary">
@@ -168,11 +168,10 @@
 
   <div class="content e-content" itemprop="articleBody">
     <p>​	2008年10月31日，中本聪（Satoshi Nakamoto）发布了一篇名为《比特币：一种点对点的电子现金系统》（Bitcoin: A Peer-to-Peer Electronic Cash System）论文，详细阐述了比特币的理念和技术细节。随后，2009年1月3日，中本聪挖出了比特币网络的创世区块，标志着比特币的诞生。</p>
-<p>​	比特币自诞生后，吸引了众多加密学，计算机及金融领域的人士参与。并随着比特币的不断传播，接受比特币和围绕比特币建立生态应用的人变得越来越多，从而初步形成了围绕比特币生产和交易的芯片、集成电路、交易所、钱包、应用软件等组成的产业格局，这也使得比特币和一众加密货币渐渐走向大众视野。</p>
-<p>​	除了比特币的生产和交易，人们也开始尝试在比特币网络上开发更多能够使用在实际生活中的应用，但是遇到了比特币区块链网络本身的技术瓶颈。因为在区块链分布式系统设计中，难以同时满足去中心化、安全性和可扩展性。而相比可扩展性，去中心化和安全性是被人们普遍认为是更重要的特性，因此在不牺牲比特币网络的去中心化和安全性的前提下，如何增加可扩展性变成了比特币技术突破的重点探索方向。</p>
+<p>​	比特币自诞生后，吸引了众多计算机，金融领域的人士参与。随着比特币的不断传播，围绕比特币生产交易的芯片、集成电路、交易所、钱包、应用软件等蓬勃发展，这也使得比特币和一众加密货币渐渐走向大众视野。除了比特币的生产和交易，人们也开始尝试在比特币网络上开发更多能够使用在实际生活中的应用，但是遇到了比特币区块链网络本身的技术瓶颈。因为在区块链分布式系统设计中，难以同时满足去中心化、安全性和可扩展性。而相比可扩展性，去中心化和安全性是被人们普遍认为是更重要的特性，因此在不牺牲比特币网络的去中心化和安全性的前提下，如何增加可扩展性变成了比特币技术突破的重点探索方向。</p>
 <p>​	比特币发展至今，经历过两次重大的技术升级，也正是这两次升级为今天比特币生态繁荣打下了基础。第一次是<strong>隔离见证升级（Segregated Witness，SEGWIT）</strong>，第二次则是<strong>Taproot升级</strong>，本篇文章着重分析一下隔离见证升级的整个过程。</p>
 <blockquote>
-<p>阅读本篇文章所需前置知识：区块链基础知识，比特币UTXO账户模型</p>
+<p>阅读本篇文章所需前置知识：区块链基础知识，<strong>比特币UTXO账户模型</strong></p>
 <p>很棒的区块链入门视频：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Vt411X7JF/">北京大学肖臻老师《区块链技术与应用》公开课</a></p>
 <p>推荐阅读材料：<a target="_blank" rel="noopener" href="https://books.oktangle.com/masterbtc/cn-preface.html">《精通比特币第二版》</a></p>
 </blockquote>
